@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__kite__login",
+      "mcp__kite__get_profile",
+      "mcp__kite__get_holdings",
+      "mcp__kite__get_positions",
+      "mcp__kite__get_margins",
+      "mcp__kite__get_mf_holdings",
+      "mcp__kite__get_orders",
+      "mcp__kite__get_order_history",
+      "mcp__kite__get_order_trades",
+      "mcp__kite__get_trades",
+      "mcp__kite__get_gtts",
+      "mcp__kite__get_ltp",
+      "mcp__kite__get_quotes",
+      "mcp__kite__get_ohlc",
+      "mcp__kite__get_historical_data",
+      "mcp__kite__search_instruments"
+    ]
+  },
+  "enableAllProjectMcpServers": true
+}

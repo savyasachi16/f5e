@@ -1,0 +1,17 @@
+# PII / account-specific data — DO NOT commit
+*.pdf
+*.png
+*.jpg
+*.jpeg
+zerodha-trades-*.json
+zerodha-pnl-*.txt
+zerodha-pnl-*.json
+
+# Browser session artefacts
+.playwright-mcp/
+
+# Local Claude state (allowlist exceptions, etc.)
+.claude/settings.local.json
+
+# Working analysis scripts (uncomment to share)
+analyze_trades.py
