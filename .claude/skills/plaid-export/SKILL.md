@@ -1,6 +1,6 @@
 ---
 name: plaid-export
-description: Pull US account data through Plaid's official CLI, persist raw JSON under data/raw/plaid, then ingest it into SQLite. Use when the user asks to sync Plaid, fetch US accounts, or import transactions from a linked US institution.
+description: Pull US account data through Plaid's official CLI, persist raw JSON under data/raw/plaid, then ingest it into SQLite. Use when the user asks to sync Plaid, fetch US accounts, or import transactions or holdings from a linked US institution.
 allowed-tools:
   - Bash
   - Read
@@ -49,6 +49,23 @@ plaid transactions get \
 
 If the CLI needs explicit app credentials in your environment, pull them from 1Password first and export them in the current shell before running `plaid ...`.
 
+## Export holdings
+
+Suggested layout:
+
+```text
+data/raw/plaid/<institution>/<YYYY-MM-DD>-holdings.json
+```
+
+Example:
+
+```bash
+mkdir -p data/raw/plaid/schwab
+plaid investments holdings get \
+  --access-token "$(op item get Plaid --vault Private --fields schwab_token --reveal)" \
+  > "data/raw/plaid/schwab/$(date +%F)-holdings.json"
+```
+
 ## Ingest into SQLite
 
 ```bash
@@ -59,6 +76,7 @@ Current ingester behavior:
 
 - creates/updates `accounts` rows with `source='plaid'`
 - ingests `transactions`
+- ingests investment `holdings` when the payload includes `holdings` + `securities`
 - flips Plaid amount signs to repo convention:
   - Plaid `+amount` = money out
   - repo `+amount` = money in
@@ -73,11 +91,13 @@ The ingester expects one JSON object containing:
 {
   "institution": {"name": "Chase"},
   "accounts": [...],
-  "transactions": [...]
+  "transactions": [...],
+  "holdings": [...],
+  "securities": [...]
 }
 ```
 
-That matches the synthetic test fixture and keeps the file self-contained for re-ingest.
+Only the fields relevant to the specific export need to be present. Transactions-only and holdings-only payloads are both supported.
 
 ## Verification
 
@@ -89,6 +109,13 @@ sqlite3 data/finances.db "
   JOIN accounts a ON a.id = t.account_id
   WHERE a.source = 'plaid'
   GROUP BY 1
+"
+sqlite3 data/finances.db "
+  SELECT a.institution, h.symbol, h.quantity, h.market_value
+  FROM holdings h
+  JOIN accounts a ON a.id = h.account_id
+  WHERE a.source = 'plaid'
+  ORDER BY a.institution, h.symbol
 "
 ```
 
