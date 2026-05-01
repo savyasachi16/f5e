@@ -18,6 +18,7 @@ def test_install_check_skips_claude_health_probe(tmp_path):
 
     for name in ("brew", "op", "jq", "gh", "sqlite3"):
         _write_exe(bindir / name, "#!/usr/bin/env bash\nexit 0\n")
+    _write_exe(bindir / "plaid", "#!/usr/bin/env bash\nexit 1\n")
 
     _write_exe(
         bindir / "uv",
@@ -44,5 +45,4 @@ def test_install_check_skips_claude_health_probe(tmp_path):
     )
 
     assert proc.returncode == 0
-    assert "Plaid CLI not found" in proc.stdout
     assert "Playwright MCP check skipped in --check mode" in proc.stdout

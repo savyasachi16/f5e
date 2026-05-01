@@ -56,10 +56,35 @@ def _holding_date(holding: dict) -> str:
 
 def _avg_cost(holding: dict) -> float | None:
     cost_basis = holding.get("cost_basis")
-    quantity = holding.get("quantity")
-    if cost_basis is None or quantity in (None, 0):
+    if cost_basis is None:
         return None
-    return float(cost_basis) / float(quantity)
+    direct = float(cost_basis)
+    quantity = holding.get("quantity")
+    if quantity in (None, 0):
+        return direct
+    per_unit = direct / float(quantity)
+    price = holding.get("institution_price")
+    if price is None:
+        return per_unit if quantity and abs(per_unit) <= abs(direct) else direct
+    return per_unit if abs(per_unit - float(price)) < abs(direct - float(price)) else direct
+
+
+def _load_payload(path: Path) -> dict:
+    text = path.read_text()
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError:
+        payload = None
+        for line in text.splitlines():
+            stripped = line.strip()
+            if not stripped:
+                continue
+            obj = json.loads(stripped)
+            if isinstance(obj, dict) and any(key in obj for key in ("accounts", "transactions", "holdings", "securities")):
+                payload = obj
+        if payload is None:
+            raise
+        return payload
 
 
 def ingest(
@@ -70,7 +95,7 @@ def ingest(
 ) -> tuple[int, int]:
     """Returns (rows_added, rows_updated)."""
     path = Path(path)
-    payload = json.loads(path.read_text())
+    payload = _load_payload(path)
 
     institution_name = institution or payload.get("institution", {}).get("name") or "Plaid"
     account_ids: dict[str, int] = {}

@@ -1,4 +1,5 @@
 from pathlib import Path
+import json
 
 from f5e.ingest import plaid as pi
 
@@ -103,3 +104,18 @@ def test_ingest_holdings_idempotent(con):
     assert u2 == 2
     n = con.execute("SELECT COUNT(*) AS n FROM holdings").fetchone()["n"]
     assert n == 2
+
+
+def test_ingest_accepts_cli_ndjson_output(con, tmp_path):
+    payload = json.loads(TXN_FIXTURE.read_text())
+    wrapped = tmp_path / "plaid-transactions-cli.ndjson"
+    wrapped.write_text(
+        json.dumps({"diagnostic": {"code": "FETCHING_TRANSACTIONS"}})
+        + "\n"
+        + json.dumps(payload)
+        + "\n"
+    )
+
+    added, updated = pi.ingest(con, wrapped)
+    assert added == 3
+    assert updated == 0
