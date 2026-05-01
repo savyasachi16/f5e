@@ -35,10 +35,11 @@ def ingest(
     added = 0
     updated = 0
     for t in trades:
+        # trade_id alone collides across orders in Zerodha exports; combine with order_id.
         was_insert = f5e_db.upsert_trade(
             con,
             account_id=account_id,
-            source_uid=str(t["trade_id"]),
+            source_uid=f"{t['order_id']}:{t['trade_id']}",
             symbol=t["tradingsymbol"],
             side=t["trade_type"],
             quantity=t["quantity"],
