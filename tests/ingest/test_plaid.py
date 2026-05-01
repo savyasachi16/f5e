@@ -2,11 +2,12 @@ from pathlib import Path
 
 from f5e.ingest import plaid as pi
 
-FIXTURE = Path(__file__).parent.parent / "fixtures" / "plaid_transactions_sample.json"
+TXN_FIXTURE = Path(__file__).parent.parent / "fixtures" / "plaid_transactions_sample.json"
+HOLDINGS_FIXTURE = Path(__file__).parent.parent / "fixtures" / "plaid_holdings_sample.json"
 
 
 def test_ingest_creates_accounts_and_transactions(con):
-    added, updated = pi.ingest(con, FIXTURE)
+    added, updated = pi.ingest(con, TXN_FIXTURE)
     assert added == 3
     assert updated == 0
 
@@ -43,8 +44,8 @@ def test_ingest_creates_accounts_and_transactions(con):
 
 
 def test_ingest_idempotent(con):
-    a1, _ = pi.ingest(con, FIXTURE)
-    a2, u2 = pi.ingest(con, FIXTURE)
+    a1, _ = pi.ingest(con, TXN_FIXTURE)
+    a2, u2 = pi.ingest(con, TXN_FIXTURE)
     assert a1 == 3
     assert a2 == 0
     assert u2 == 3
@@ -53,8 +54,52 @@ def test_ingest_idempotent(con):
 
 
 def test_ingest_writes_log_row(con):
-    pi.ingest(con, FIXTURE)
+    pi.ingest(con, TXN_FIXTURE)
     log = con.execute("SELECT source, rows_added, rows_updated FROM ingestion_log").fetchall()
     assert len(log) == 1
     assert log[0]["source"] == "plaid"
     assert log[0]["rows_added"] == 3
+
+
+def test_ingest_creates_holdings(con):
+    added, updated = pi.ingest(con, HOLDINGS_FIXTURE)
+    assert added == 2
+    assert updated == 0
+
+    account = con.execute(
+        """
+        SELECT source, institution, external_id, account_type, currency, nickname
+        FROM accounts
+        """
+    ).fetchone()
+    assert account["source"] == "plaid"
+    assert account["institution"] == "Schwab"
+    assert account["external_id"] == "acc_brokerage_789"
+    assert account["account_type"] == "brokerage"
+    assert account["currency"] == "USD"
+    assert account["nickname"] == "Schwab Individual Brokerage"
+
+    holdings = con.execute(
+        """
+        SELECT as_of_date, symbol, quantity, avg_cost, market_value, currency
+        FROM holdings
+        ORDER BY symbol
+        """
+    ).fetchall()
+    assert len(holdings) == 2
+    assert [h["symbol"] for h in holdings] == ["US Treasury Bill 5.43% 31/10/2025", "VTI"]
+    assert [h["as_of_date"] for h in holdings] == ["2025-04-10", "2025-04-10"]
+    assert [h["quantity"] for h in holdings] == [10.0, 20.0]
+    assert [h["avg_cost"] for h in holdings] == [94.808, 210.0]
+    assert [h["market_value"] for h in holdings] == [948.08, 5005.0]
+    assert all(h["currency"] == "USD" for h in holdings)
+
+
+def test_ingest_holdings_idempotent(con):
+    a1, _ = pi.ingest(con, HOLDINGS_FIXTURE)
+    a2, u2 = pi.ingest(con, HOLDINGS_FIXTURE)
+    assert a1 == 2
+    assert a2 == 0
+    assert u2 == 2
+    n = con.execute("SELECT COUNT(*) AS n FROM holdings").fetchone()["n"]
+    assert n == 2

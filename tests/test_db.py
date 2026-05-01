@@ -91,3 +91,21 @@ def test_upsert_transaction_idempotent(con):
     assert a is True and b is False
     n = con.execute("SELECT COUNT(*) AS n FROM transactions").fetchone()["n"]
     assert n == 1
+
+
+def test_upsert_holding_idempotent(con):
+    aid = f5e_db.upsert_account(
+        con, source="plaid", institution="Schwab", external_id="acct_inv_1",
+        currency="USD",
+    )
+    a = f5e_db.upsert_holding(
+        con, account_id=aid, as_of_date="2025-04-10", symbol="VTI",
+        quantity=20, avg_cost=210.0, market_value=5005.0, currency="USD",
+    )
+    b = f5e_db.upsert_holding(
+        con, account_id=aid, as_of_date="2025-04-10", symbol="VTI",
+        quantity=20, avg_cost=210.0, market_value=5005.0, currency="USD",
+    )
+    assert a is True and b is False
+    n = con.execute("SELECT COUNT(*) AS n FROM holdings").fetchone()["n"]
+    assert n == 1

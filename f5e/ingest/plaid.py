@@ -1,10 +1,12 @@
-"""Ingest a Plaid transactions JSON dump into SQLite.
+"""Ingest a Plaid transactions or holdings JSON dump into SQLite.
 
 Expected input shape:
   {
     "institution": {"name": "..."},
     "accounts": [...],
-    "transactions": [...]
+    "transactions": [...],   # optional
+    "holdings": [...],       # optional
+    "securities": [...]      # optional, used with holdings
   }
 
 Amounts are normalized to the repo convention:
@@ -39,6 +41,27 @@ def _description(txn: dict) -> str | None:
     return txn.get("merchant_name") or txn.get("name")
 
 
+def _holding_symbol(holding: dict, securities: dict[str, dict]) -> str:
+    security = securities.get(holding["security_id"], {})
+    return security.get("ticker_symbol") or security.get("name") or holding["security_id"]
+
+
+def _holding_date(holding: dict) -> str:
+    if holding.get("institution_price_as_of"):
+        return holding["institution_price_as_of"]
+    if holding.get("institution_price_datetime"):
+        return holding["institution_price_datetime"][:10]
+    raise ValueError(f"holding {holding['security_id']} is missing an as-of date")
+
+
+def _avg_cost(holding: dict) -> float | None:
+    cost_basis = holding.get("cost_basis")
+    quantity = holding.get("quantity")
+    if cost_basis is None or quantity in (None, 0):
+        return None
+    return float(cost_basis) / float(quantity)
+
+
 def ingest(
     con,
     path: Path | str,
@@ -51,8 +74,10 @@ def ingest(
 
     institution_name = institution or payload.get("institution", {}).get("name") or "Plaid"
     account_ids: dict[str, int] = {}
+    accounts_by_external_id = {account["account_id"]: account for account in payload.get("accounts", [])}
+    securities_by_id = {security["security_id"]: security for security in payload.get("securities", [])}
 
-    for account in payload.get("accounts", []):
+    for external_id, account in accounts_by_external_id.items():
         external_id = account["account_id"]
         account_ids[external_id] = f5e_db.upsert_account(
             con,
@@ -81,6 +106,33 @@ def ingest(
             description=_description(txn),
             category=_category(txn),
             raw=txn,
+        )
+        if was_insert:
+            added += 1
+        else:
+            updated += 1
+
+    for holding in payload.get("holdings", []):
+        external_id = holding["account_id"]
+        if external_id not in account_ids:
+            raise ValueError(f"holding {holding['security_id']} references unknown account {external_id}")
+
+        account = accounts_by_external_id[external_id]
+        security = securities_by_id.get(holding["security_id"], {})
+        was_insert = f5e_db.upsert_holding(
+            con,
+            account_id=account_ids[external_id],
+            as_of_date=_holding_date(holding),
+            symbol=_holding_symbol(holding, securities_by_id),
+            quantity=holding["quantity"],
+            avg_cost=_avg_cost(holding),
+            market_value=holding.get("institution_value"),
+            currency=_currency(
+                {"balances": security},
+                {"iso_currency_code": holding.get("iso_currency_code"),
+                 "unofficial_currency_code": holding.get("unofficial_currency_code")},
+            ) or _currency(account),
+            raw={"holding": holding, "security": security},
         )
         if was_insert:
             added += 1

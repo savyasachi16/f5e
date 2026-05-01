@@ -141,6 +141,45 @@ def upsert_transaction(
     return inserted
 
 
+def upsert_holding(
+    con: sqlite3.Connection,
+    *,
+    account_id: int,
+    as_of_date: str,
+    symbol: str,
+    quantity: float,
+    avg_cost: float | None = None,
+    market_value: float | None = None,
+    currency: str,
+    raw: Any = None,
+) -> bool:
+    row = con.execute(
+        "SELECT 1 FROM holdings WHERE account_id = ? AND as_of_date = ? AND symbol = ?",
+        (account_id, as_of_date, symbol),
+    ).fetchone()
+    inserted = row is None
+    con.execute(
+        """
+        INSERT INTO holdings
+          (account_id, as_of_date, symbol, quantity, avg_cost, market_value, currency, raw)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(account_id, as_of_date, symbol) DO UPDATE SET
+          quantity = excluded.quantity,
+          avg_cost = excluded.avg_cost,
+          market_value = excluded.market_value,
+          currency = excluded.currency,
+          raw = excluded.raw
+        """,
+        (
+            account_id, as_of_date, symbol, float(quantity),
+            None if avg_cost is None else float(avg_cost),
+            None if market_value is None else float(market_value),
+            currency, _maybe_json(raw),
+        ),
+    )
+    return inserted
+
+
 def log_ingestion(con: sqlite3.Connection, source: str, added: int, updated: int, notes: str = "") -> None:
     con.execute(
         "INSERT INTO ingestion_log (source, rows_added, rows_updated, notes) VALUES (?, ?, ?, ?)",

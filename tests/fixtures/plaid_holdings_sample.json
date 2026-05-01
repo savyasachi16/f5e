@@ -1,0 +1,61 @@
+{
+  "institution": {
+    "name": "Schwab"
+  },
+  "accounts": [
+    {
+      "account_id": "acc_brokerage_789",
+      "name": "Individual Brokerage",
+      "official_name": "Schwab Individual Brokerage",
+      "type": "investment",
+      "subtype": "brokerage",
+      "balances": {
+        "iso_currency_code": "USD",
+        "current": 15385.44,
+        "available": 1200.0
+      }
+    }
+  ],
+  "holdings": [
+    {
+      "account_id": "acc_brokerage_789",
+      "security_id": "sec_vti",
+      "institution_price": 250.25,
+      "institution_price_as_of": "2025-04-10",
+      "institution_price_datetime": null,
+      "institution_value": 5005.0,
+      "cost_basis": 4200.0,
+      "quantity": 20.0,
+      "iso_currency_code": "USD"
+    },
+    {
+      "account_id": "acc_brokerage_789",
+      "security_id": "sec_tbill",
+      "institution_price": 94.808,
+      "institution_price_as_of": null,
+      "institution_price_datetime": "2025-04-10T20:00:00Z",
+      "institution_value": 948.08,
+      "cost_basis": 948.08,
+      "quantity": 10.0,
+      "iso_currency_code": "USD"
+    }
+  ],
+  "securities": [
+    {
+      "security_id": "sec_vti",
+      "ticker_symbol": "VTI",
+      "name": "Vanguard Total Stock Market ETF",
+      "type": "etf",
+      "subtype": "etf",
+      "iso_currency_code": "USD"
+    },
+    {
+      "security_id": "sec_tbill",
+      "ticker_symbol": null,
+      "name": "US Treasury Bill 5.43% 31/10/2025",
+      "type": "fixed income",
+      "subtype": "bill",
+      "iso_currency_code": "USD"
+    }
+  ]
+}
