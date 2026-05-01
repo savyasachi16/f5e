@@ -119,3 +119,17 @@ def test_ingest_accepts_cli_ndjson_output(con, tmp_path):
     added, updated = pi.ingest(con, wrapped)
     assert added == 3
     assert updated == 0
+
+
+def test_ingest_allows_institution_override(con, tmp_path):
+    payload = json.loads(HOLDINGS_FIXTURE.read_text())
+    payload.pop("institution")
+    path = tmp_path / "plaid-holdings-no-institution.json"
+    path.write_text(json.dumps(payload))
+
+    pi.ingest(con, path, institution="Robinhood")
+
+    account = con.execute(
+        "SELECT institution FROM accounts WHERE source = 'plaid' AND external_id = 'acc_brokerage_789'"
+    ).fetchone()
+    assert account["institution"] == "Robinhood"
