@@ -1,0 +1,62 @@
+{
+  "institution": {
+    "name": "Chase"
+  },
+  "accounts": [
+    {
+      "account_id": "acc_checking_123",
+      "name": "Total Checking",
+      "official_name": "Chase Total Checking",
+      "type": "depository",
+      "subtype": "checking",
+      "balances": {
+        "iso_currency_code": "USD"
+      }
+    },
+    {
+      "account_id": "acc_credit_456",
+      "name": "Sapphire Reserve",
+      "official_name": "Chase Sapphire Reserve",
+      "type": "credit",
+      "subtype": "credit card",
+      "balances": {
+        "iso_currency_code": "USD"
+      }
+    }
+  ],
+  "transactions": [
+    {
+      "transaction_id": "txn_001",
+      "account_id": "acc_checking_123",
+      "date": "2025-04-01",
+      "amount": 42.5,
+      "iso_currency_code": "USD",
+      "name": "Coffee Shop",
+      "personal_finance_category": {
+        "primary": "FOOD_AND_DRINK"
+      }
+    },
+    {
+      "transaction_id": "txn_002",
+      "account_id": "acc_checking_123",
+      "date": "2025-04-02",
+      "amount": -1200.0,
+      "iso_currency_code": "USD",
+      "name": "Payroll Deposit",
+      "personal_finance_category": {
+        "primary": "INCOME"
+      }
+    },
+    {
+      "transaction_id": "txn_003",
+      "account_id": "acc_credit_456",
+      "date": "2025-04-03",
+      "amount": 95.25,
+      "iso_currency_code": "USD",
+      "name": "Airline Ticket",
+      "personal_finance_category": {
+        "primary": "TRAVEL"
+      }
+    }
+  ]
+}
