@@ -1,0 +1,54 @@
+[
+  {
+    "trade_date": "2024-01-15",
+    "trade_type": "buy",
+    "quantity": 10,
+    "price": 100.0,
+    "trade_id": "T-1001",
+    "order_id": "O-1",
+    "tradingsymbol": "TESTCO",
+    "exchange": "NSE",
+    "segment": "EQ",
+    "order_execution_time": "2024-01-15T09:30:00",
+    "isin": "INE000TEST01"
+  },
+  {
+    "trade_date": "2024-06-20",
+    "trade_type": "buy",
+    "quantity": 5,
+    "price": 120.0,
+    "trade_id": "T-1002",
+    "order_id": "O-2",
+    "tradingsymbol": "TESTCO",
+    "exchange": "NSE",
+    "segment": "EQ",
+    "order_execution_time": "2024-06-20T10:15:00",
+    "isin": "INE000TEST01"
+  },
+  {
+    "trade_date": "2024-08-01",
+    "trade_type": "sell",
+    "quantity": 8,
+    "price": 150.0,
+    "trade_id": "T-1003",
+    "order_id": "O-3",
+    "tradingsymbol": "TESTCO",
+    "exchange": "NSE",
+    "segment": "EQ",
+    "order_execution_time": "2024-08-01T11:00:00",
+    "isin": "INE000TEST01"
+  },
+  {
+    "trade_date": "2025-02-10",
+    "trade_type": "sell",
+    "quantity": 7,
+    "price": 200.0,
+    "trade_id": "T-1004",
+    "order_id": "O-4",
+    "tradingsymbol": "TESTCO",
+    "exchange": "NSE",
+    "segment": "EQ",
+    "order_execution_time": "2025-02-10T13:45:00",
+    "isin": "INE000TEST01"
+  }
+]
