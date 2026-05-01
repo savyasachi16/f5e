@@ -15,3 +15,17 @@ zerodha-pnl-*.json
 
 # Working analysis scripts (uncomment to share)
 analyze_trades.py
+
+# Python / pytest
+__pycache__/
+*.pyc
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.venv/
+
+# SQLite working DB + raw exports
+data/finances.db
+data/finances.db-*
+data/raw/
