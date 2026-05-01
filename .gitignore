@@ -3,7 +3,6 @@
 *.png
 *.jpg
 *.jpeg
-zerodha-trades-*.json
 zerodha-pnl-*.txt
 zerodha-pnl-*.json
 
@@ -12,9 +11,6 @@ zerodha-pnl-*.json
 
 # Local Claude state (allowlist exceptions, etc.)
 .claude/settings.local.json
-
-# Working analysis scripts (uncomment to share)
-analyze_trades.py
 
 # Python / pytest
 __pycache__/

@@ -1,6 +1,6 @@
 # f5e — Personal Finance Analysis & Advice
 
-Tooling for analyzing personal finances across Indian banking + brokerage providers (Kotak, Zerodha). Used for tax planning, P&L analysis, and investment decisions.
+Tooling for analyzing personal finances across Indian (Kotak, Zerodha) **and US (Plaid, planned)** providers — owner is an NRI with accounts on both sides. Used for tax planning, P&L analysis, and investment decisions. All ingested data lands in a single SQLite DB at `data/finances.db` (gitignored).
 
 ## Data sources
 
@@ -9,15 +9,17 @@ Tooling for analyzing personal finances across Indian banking + brokerage provid
 | Kotak Mahindra Bank netbanking | Playwright + 1Password | Statement PDFs |
 | Zerodha Console (`console.zerodha.com`) | Playwright + internal JSON API | Historical trades, tax P&L, ledger |
 | Zerodha Kite Connect | Kite MCP (hosted) | Live data: holdings, positions, LTP, quotes, OHLC, historical, GTTs |
+| Plaid (US accounts) | Plaid official CLI + Trial Plan | Transactions, balances, investments (planned: `plaid-export` skill) |
 
 ## Skills
 
 | Skill | Trigger | Purpose |
 |---|---|---|
 | `kotak-export` | "download Kotak statements" | Playwright-driven statement export, handles ngbDatepicker traps |
-| `zerodha-export` | "pull Zerodha tradebook / tax P&L" | Console internal-API export + FIFO P&L analyzer (STCG/LTCG) |
+| `zerodha-export` | "pull Zerodha tradebook / tax P&L" | Console internal-API export → `data/raw/zerodha/` → `python -m f5e.ingest.zerodha` → SQLite |
+| `plaid-export` *(planned)* | "pull plaid / sync US accounts" | `plaid-cli` JSON → `data/raw/plaid/` → `python -m f5e.ingest.plaid` → SQLite |
 
-Both skills live in `.claude/skills/` (also symlinked into `.opencode/skills/`).
+All skills live in `.claude/skills/` (also symlinked into `.opencode/skills/`).
 
 ## MCPs
 
@@ -28,10 +30,9 @@ Both skills live in `.claude/skills/` (also symlinked into `.opencode/skills/`).
 
 This repo is **PUBLIC on GitHub**. The `.gitignore` blocks PII-bearing files; never push:
 
-- `zerodha-trades-*.json` — full trade history
+- `data/finances.db` + `data/raw/` — everything ingested, including raw exports kept for re-ingest
 - `*.pdf`, `*.png`, `*.jpg` — screenshots and statements show account numbers, balances, real names
 - `.playwright-mcp/` — cached browser session, console logs
-- `analyze_trades.py` — local-only working analyzer (uncomment its gitignore line to share)
 
 Add new PII-producing filename patterns to `.gitignore` *before* generating them.
 
@@ -66,15 +67,35 @@ Relevant entries (titles only — values stay in vault):
 f5e/
 ├── .claude/
 │   ├── settings.json          # Kite read-only allowlist
-│   └── skills/{kotak,zerodha}-export/SKILL.md
+│   └── skills/{kotak,zerodha,plaid}-export/SKILL.md
 ├── .opencode/
 │   ├── skills/                # symlink → ../.claude/skills
 │   └── commands/              # slash-command shims
+├── data/                      # gitignored — finances.db + raw/{zerodha,kotak,plaid}/
+├── db/schema.sql              # idempotent SQLite schema
+├── f5e/                       # Python package (stdlib-only runtime)
+│   ├── db.py                  # connect(), apply_schema(), upsert_*()
+│   ├── ingest/{zerodha,plaid,kotak}.py
+│   └── analyze/fifo_pnl.py    # FIFO STCG/LTCG over the trades table
+├── tests/                     # pytest, in-memory SQLite fixtures, synthetic data only
+├── pyproject.toml             # uv-managed (`uv sync`, `uv run pytest`)
 ├── .mcp.json                  # Kite MCP (Claude Code reads this)
-├── opencode.json              # OpenCode equivalent (mcp + permissions + instructions ref)
-├── CLAUDE.md                  # this file (also referenced from opencode.json)
+├── opencode.json              # OpenCode equivalent
+├── CLAUDE.md                  # this file (symlink to AI.md, also referenced from opencode.json)
 └── .gitignore
 ```
+
+## Data flow
+
+1. **Pull** — a `*-export` skill writes raw JSON/PDF to `data/raw/<source>/<period>.{json,pdf}`.
+2. **Ingest** — `python -m f5e.ingest.<source> <path>` upserts into `data/finances.db`. Idempotent on `(account_id, source_uid)` — re-running is safe.
+3. **Analyze** — `python -m f5e.analyze.fifo_pnl` (or ad-hoc SQL via `sqlite3 data/finances.db`).
+
+## Testing
+
+- `uv sync` once, then `uv run pytest` for the suite.
+- Tests use **in-memory SQLite** (`:memory:` fixture in `tests/conftest.py`) and **synthetic** sample data under `tests/fixtures/` — never copy real exports there.
+- New ingestion modules: write a failing test against a synthetic fixture before implementing.
 
 ## Tone & style
 
