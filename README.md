@@ -19,7 +19,7 @@ Three skills so far, plus a Kite MCP wiring and a SQLite-backed ingestion pipeli
 |---|---|
 | [`kotak-export`](.claude/skills/kotak-export/SKILL.md) | Download Kotak Mahindra Bank statements via Playwright + 1Password creds. |
 | [`zerodha-export`](.claude/skills/zerodha-export/SKILL.md) | Pull historical Zerodha trades from Console's internal JSON API + a FIFO P&L analyzer (STCG/LTCG). |
-| [`plaid-export`](.claude/skills/plaid-export/SKILL.md) | Pull US cash transactions, investment transactions, and holdings through Plaid CLI into `data/raw/plaid/`, then ingest into SQLite. |
+| [`plaid-export`](.claude/skills/plaid-export/SKILL.md) | Pull US cash transactions, investment transactions, and holdings through Plaid CLI into `data/raw/plaid/`, with `python -m f5e.export.plaid` handling pagination when needed. |
 | [`kite` MCP](.mcp.json) | Hosted Zerodha Kite Connect MCP (read-only tools allowlisted in `.claude/settings.json`). |
 
 ## Setup

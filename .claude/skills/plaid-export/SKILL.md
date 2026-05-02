@@ -89,6 +89,13 @@ plaid investments transactions --item robinhood \
   --count 100 --offset 100 --json > data/raw/plaid/robinhood/2026-05-02-investment-transactions-page-2.json
 ```
 
+Or use the repo helper to fetch and merge every page automatically:
+
+```bash
+python -m f5e.export.plaid investment_transactions robinhood 2020-01-01 2026-05-02 \
+  data/raw/plaid/robinhood/2026-05-02-investment-transactions-merged.json
+```
+
 ## Ingest into SQLite
 
 ```bash

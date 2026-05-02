@@ -17,7 +17,7 @@ Tooling for analyzing personal finances across Indian (Kotak, Zerodha) **and US 
 |---|---|---|
 | `kotak-export` | "download Kotak statements" | Playwright-driven statement export, handles ngbDatepicker traps |
 | `zerodha-export` | "pull Zerodha tradebook / tax P&L" | Console internal-API export → `data/raw/zerodha/` → `python -m f5e.ingest.zerodha` → SQLite |
-| `plaid-export` | "pull plaid / sync US accounts" | Plaid CLI JSON/NDJSON → `data/raw/plaid/` → `python -m f5e.ingest.plaid` → SQLite (`transactions`, `trades`, `holdings`) |
+| `plaid-export` | "pull plaid / sync US accounts" | `python -m f5e.export.plaid ...` or raw Plaid CLI JSON/NDJSON → `data/raw/plaid/` → `python -m f5e.ingest.plaid` → SQLite (`transactions`, `trades`, `holdings`) |
 
 All skills live in `.claude/skills/` (also symlinked into `.opencode/skills/`).
 
@@ -76,6 +76,7 @@ f5e/
 ├── db/schema.sql              # idempotent SQLite schema
 ├── f5e/                       # Python package (stdlib-only runtime)
 │   ├── db.py                  # connect(), apply_schema(), upsert_*()
+│   ├── export/plaid.py        # paginated Plaid CLI export helper
 │   ├── ingest/{zerodha,plaid,kotak}.py
 │   └── analyze/fifo_pnl.py    # FIFO STCG/LTCG over the trades table
 ├── tests/                     # pytest, in-memory SQLite fixtures, synthetic data only
