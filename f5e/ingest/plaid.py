@@ -53,7 +53,22 @@ def _read_institution_sidecar(path: Path, institution_id: str | None) -> str | N
     return institution.get("name")
 
 
+_CANONICAL_INSTITUTION_BY_SLUG = {
+    "chase": "Chase",
+    "etrade": "E*TRADE",
+    "e_trade": "E*TRADE",
+    "capitalone": "Capital One",
+    "capital_one": "Capital One",
+    "discover": "Discover",
+    "schwab": "Schwab",
+    "robinhood": "Robinhood",
+}
+
+
 def _titleize_slug(text: str) -> str:
+    canonical = _CANONICAL_INSTITUTION_BY_SLUG.get(text.lower())
+    if canonical:
+        return canonical
     return " ".join(part.capitalize() for part in text.replace("_", " ").replace("-", " ").split())
 
 

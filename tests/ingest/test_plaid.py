@@ -174,6 +174,37 @@ def test_ingest_falls_back_to_parent_dir_for_institution_name(con, tmp_path):
     assert account["institution"] == "Robinhood"
 
 
+def test_ingest_resolves_canonical_institution_names_from_slug(con, tmp_path):
+    cases = {
+        "chase": "Chase",
+        "etrade": "E*TRADE",
+        "capitalone": "Capital One",
+        "discover": "Discover",
+        "schwab": "Schwab",
+    }
+    for slug, expected in cases.items():
+        payload = json.loads(HOLDINGS_FIXTURE.read_text())
+        payload.pop("institution")
+        # make external_id unique per slug so rows don't collide
+        for account in payload["accounts"]:
+            account["account_id"] = f"acc_{slug}"
+        for holding in payload["holdings"]:
+            holding["account_id"] = f"acc_{slug}"
+
+        export_dir = tmp_path / slug
+        export_dir.mkdir()
+        path = export_dir / "holdings.json"
+        path.write_text(json.dumps(payload))
+
+        pi.ingest(con, path)
+
+        row = con.execute(
+            "SELECT institution FROM accounts WHERE source = 'plaid' AND external_id = ?",
+            (f"acc_{slug}",),
+        ).fetchone()
+        assert row["institution"] == expected, f"slug {slug!r} resolved to {row['institution']!r}, expected {expected!r}"
+
+
 def test_ingest_creates_trades_and_cash_transactions_from_investment_transactions(con):
     added, updated = pi.ingest(con, INVESTMENT_TXN_FIXTURE)
     assert added == 3
