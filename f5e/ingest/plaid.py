@@ -61,6 +61,7 @@ _CANONICAL_INSTITUTION_BY_SLUG = {
     "capital_one": "Capital One",
     "discover": "Discover",
     "schwab": "Schwab",
+    "schwab401k": "Schwab 401(k)",
     "robinhood": "Robinhood",
 }
 

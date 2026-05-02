@@ -181,6 +181,7 @@ def test_ingest_resolves_canonical_institution_names_from_slug(con, tmp_path):
         "capitalone": "Capital One",
         "discover": "Discover",
         "schwab": "Schwab",
+        "schwab401k": "Schwab 401(k)",
     }
     for slug, expected in cases.items():
         payload = json.loads(HOLDINGS_FIXTURE.read_text())
