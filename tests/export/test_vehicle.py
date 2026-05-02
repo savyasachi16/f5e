@@ -10,11 +10,10 @@ FIXTURE = Path(__file__).parent.parent / "fixtures" / "vehicles_sample.json"
 
 
 def _fake_fetch_factory(prices: dict[str, float]):
-    def fake(vin, mileage, zip_code, *, api_key):
+    def fake(asset, *, api_key):
         assert api_key == "secret"
-        assert isinstance(mileage, int)
-        assert isinstance(zip_code, str)
-        return {"price": prices[vin], "vin": vin, "miles": mileage}
+        key = asset.get("vin") or asset["name"]
+        return {"price": prices[key], "raw": {"echo": asset}}
     return fake
 
 
@@ -56,8 +55,8 @@ def test_enrich_vehicles_requires_api_key(tmp_path, monkeypatch):
 def test_enrich_vehicles_rejects_missing_price(tmp_path):
     out = tmp_path / "vehicles-priced.json"
 
-    def bad_fetch(vin, mileage, zip_code, *, api_key):
-        return {"vin": vin}  # no price
+    def bad_fetch(asset, *, api_key):
+        return {"raw": {}}  # no price
 
     with pytest.raises(ValueError, match="price"):
         vehicle.enrich_vehicles(
@@ -95,3 +94,13 @@ def test_enriched_output_round_trips_through_assets_ingester(con, tmp_path):
     assert all(r["asset_class"] == "vehicle" for r in rows)
     assert [r["external_id"] for r in rows] == ["JYARM18E5MA000002", "5YJYGDEE7NF000001"]
     assert [r["market_value"] for r in rows] == [6200.0, 38500.0]
+
+
+def test_motorcycle_fallback_requires_year_make_model(tmp_path):
+    out = tmp_path / "vehicles-priced.json"
+    payload = {"assets": [{"name": "bike", "vehicle_type": "motorcycle"}]}
+    src = tmp_path / "in.json"
+    src.write_text(json.dumps(payload))
+
+    with pytest.raises(ValueError, match="year"):
+        vehicle.enrich_vehicles(input_path=src, output_path=out, api_key="secret")
