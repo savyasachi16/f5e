@@ -6,7 +6,7 @@ Tooling for analyzing personal finances across Indian (Kotak, Zerodha) **and US 
 
 | Source | Access | Surface |
 |---|---|---|
-| Kotak Mahindra Bank netbanking | Playwright + 1Password | Statement PDFs |
+| Kotak Mahindra Bank netbanking | Playwright + 1Password | Statement PDFs -> `python -m f5e.ingest.kotak` -> SQLite transactions |
 | Zerodha Console (`console.zerodha.com`) | Playwright + internal JSON API | Historical trades, tax P&L, ledger |
 | Zerodha Kite Connect | Kite MCP (hosted) | Live data: holdings, positions, LTP, quotes, OHLC, historical, GTTs |
 | Plaid (US accounts) | Plaid official CLI + Trial Plan | Cash transactions, investment transactions, and holdings via `plaid-export` |
@@ -15,7 +15,7 @@ Tooling for analyzing personal finances across Indian (Kotak, Zerodha) **and US 
 
 | Skill | Trigger | Purpose |
 |---|---|---|
-| `kotak-export` | "download Kotak statements" | Playwright-driven statement export, handles ngbDatepicker traps |
+| `kotak-export` | "download Kotak statements" | Playwright-driven statement export, then `python -m f5e.ingest.kotak <pdf>` into SQLite |
 | `zerodha-export` | "pull Zerodha tradebook / tax P&L" | Console internal-API export → `data/raw/zerodha/` → `python -m f5e.ingest.zerodha` → SQLite |
 | `plaid-export` | "pull plaid / sync US accounts" | `python -m f5e.export.plaid ...` or raw Plaid CLI JSON/NDJSON → `data/raw/plaid/` → `python -m f5e.ingest.plaid` → SQLite (`transactions`, `trades`, `holdings`) |
 
@@ -74,7 +74,7 @@ f5e/
 │   └── commands/              # slash-command shims
 ├── data/                      # gitignored — finances.db + raw/{zerodha,kotak,plaid}/
 ├── db/schema.sql              # idempotent SQLite schema
-├── f5e/                       # Python package (stdlib-only runtime)
+├── f5e/                       # Python package (`pdfplumber` runtime for Kotak PDF parsing)
 │   ├── db.py                  # connect(), apply_schema(), upsert_*()
 │   ├── export/plaid.py        # paginated Plaid CLI export helper
 │   ├── ingest/{zerodha,plaid,kotak}.py
@@ -91,6 +91,7 @@ f5e/
 
 1. **Pull** — a `*-export` skill writes raw JSON/PDF to `data/raw/<source>/<period>.{json,pdf}`.
 2. **Ingest** — `python -m f5e.ingest.<source> <path>` upserts into `data/finances.db`. Idempotent on `(account_id, source_uid)` — re-running is safe.
+   - Kotak currently targets the extracted text shape covered by `tests/fixtures/kotak_statement_sample.txt` and will need refinement against live statement variants.
 3. **Analyze** — `python -m f5e.analyze.fifo_pnl` (or ad-hoc SQL via `sqlite3 data/finances.db`).
 
 ## Testing

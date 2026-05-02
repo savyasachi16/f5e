@@ -6,6 +6,7 @@ Personal finance scratchpad — early days. Configured for [Claude Code](https:/
 
 <a href="https://www.python.org"><img src="https://img.shields.io/badge/Python-3776AB?style=flat&logo=python&logoColor=white" alt="Python" /></a>
 <a href="https://www.sqlite.org"><img src="https://img.shields.io/badge/SQLite-003B57?style=flat&logo=sqlite&logoColor=white" alt="SQLite" /></a>
+<a href="https://github.com/jsvine/pdfplumber"><img src="https://img.shields.io/badge/pdfplumber-4B5563?style=flat" alt="pdfplumber" /></a>
 <a href="https://docs.astral.sh/uv/"><img src="https://img.shields.io/badge/uv-DE5FE9?style=flat&logo=uv&logoColor=white" alt="uv" /></a>
 <a href="https://docs.pytest.org/"><img src="https://img.shields.io/badge/pytest-0A9EDC?style=flat&logo=pytest&logoColor=white" alt="pytest" /></a>
 <a href="https://playwright.dev"><img src="https://img.shields.io/badge/Playwright-2EAD33?style=flat&logo=playwright&logoColor=white" alt="Playwright" /></a>
@@ -17,7 +18,7 @@ Three skills so far, plus a Kite MCP wiring and a SQLite-backed ingestion pipeli
 
 | | |
 |---|---|
-| [`kotak-export`](.claude/skills/kotak-export/SKILL.md) | Download Kotak Mahindra Bank statements via Playwright + 1Password creds. |
+| [`kotak-export`](.claude/skills/kotak-export/SKILL.md) | Download Kotak Mahindra Bank statements via Playwright + 1Password creds, then ingest PDFs into SQLite with `python -m f5e.ingest.kotak`. |
 | [`zerodha-export`](.claude/skills/zerodha-export/SKILL.md) | Pull historical Zerodha trades from Console's internal JSON API + a FIFO P&L analyzer (STCG/LTCG). |
 | [`plaid-export`](.claude/skills/plaid-export/SKILL.md) | Pull US cash transactions, investment transactions, and holdings through Plaid CLI into `data/raw/plaid/`, with `python -m f5e.export.plaid` handling pagination when needed. |
 | [`kite` MCP](.mcp.json) | Hosted Zerodha Kite Connect MCP (read-only tools allowlisted in `.claude/settings.json`). |

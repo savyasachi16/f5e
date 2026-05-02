@@ -104,6 +104,16 @@ mv "$PWD/.playwright-mcp/KM"*"_statement.pdf" \
    "$HOME/Downloads/kotak/<account>/<period-label>.pdf"
 ```
 
+Then ingest into SQLite:
+
+```bash
+python -m f5e.ingest.kotak "$HOME/Downloads/kotak/<account>/<period-label>.pdf"
+```
+
+Current parser target is intentionally narrow: the extracted PDF text should resemble the
+statement-table shape covered by `tests/fixtures/kotak_statement_sample.txt`. If a live
+statement variant parses badly, extend the red fixture first, then the parser.
+
 ## Multi-account
 
 If the CRN has multiple linked accounts, the Statements page has a savings-account `<select>`. Switch via:
