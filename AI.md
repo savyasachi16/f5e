@@ -52,6 +52,7 @@ Relevant entries (titles only — values stay in vault):
 - `Zerodha Console` — broker login (user ID + password + TOTP seed → fully automatable login)
 - `Plaid` — client ID + production/sandbox secrets if bypassing dashboard auth
 - `CoinMarketCap` — API key for crypto quote enrichment
+- `MarketCheck` — API key for US vehicle price enrichment (`api_key` field)
 
 ## Working conventions
 
@@ -94,6 +95,7 @@ f5e/
 1. **Pull** — a `*-export` skill writes raw JSON/PDF to `data/raw/<source>/<period>.{json,pdf}`.
    - manual assets use JSON under `data/raw/assets/`
    - crypto holdings can be enriched with `python -m f5e.export.cmc <input> <output>`
+   - US vehicles can be priced with `python -m f5e.export.vehicle <input> <output>` (MarketCheck VIN-based predict)
 2. **Ingest** — `python -m f5e.ingest.<source> <path>` upserts into `data/finances.db`. Idempotent on `(account_id, source_uid)` — re-running is safe.
    - Kotak currently targets the extracted text shape covered by `tests/fixtures/kotak_statement_sample.txt` and will need refinement against live statement variants.
    - assets use separate `assets` / `asset_snapshots` tables and are snapshot-only in v1
