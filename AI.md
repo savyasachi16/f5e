@@ -1,6 +1,6 @@
 # f5e — Personal Finance Analysis & Advice
 
-Tooling for analyzing personal finances across Indian (Kotak, Zerodha) **and US (Plaid, planned)** providers — owner is an NRI with accounts on both sides. Used for tax planning, P&L analysis, and investment decisions. All ingested data lands in a single SQLite DB at `data/finances.db` (gitignored).
+Tooling for analyzing personal finances across Indian (Kotak, Zerodha) **and US (Plaid)** providers — owner is an NRI with accounts on both sides. Used for tax planning, P&L analysis, and investment decisions. All ingested data lands in a single SQLite DB at `data/finances.db` (gitignored).
 
 ## Data sources
 
@@ -9,7 +9,7 @@ Tooling for analyzing personal finances across Indian (Kotak, Zerodha) **and US 
 | Kotak Mahindra Bank netbanking | Playwright + 1Password | Statement PDFs |
 | Zerodha Console (`console.zerodha.com`) | Playwright + internal JSON API | Historical trades, tax P&L, ledger |
 | Zerodha Kite Connect | Kite MCP (hosted) | Live data: holdings, positions, LTP, quotes, OHLC, historical, GTTs |
-| Plaid (US accounts) | Plaid official CLI + Trial Plan | Transactions, balances, investments (planned: `plaid-export` skill) |
+| Plaid (US accounts) | Plaid official CLI + Trial Plan | Transactions and investment holdings via `plaid-export` |
 
 ## Skills
 
@@ -17,7 +17,7 @@ Tooling for analyzing personal finances across Indian (Kotak, Zerodha) **and US 
 |---|---|---|
 | `kotak-export` | "download Kotak statements" | Playwright-driven statement export, handles ngbDatepicker traps |
 | `zerodha-export` | "pull Zerodha tradebook / tax P&L" | Console internal-API export → `data/raw/zerodha/` → `python -m f5e.ingest.zerodha` → SQLite |
-| `plaid-export` *(planned)* | "pull plaid / sync US accounts" | `plaid-cli` JSON → `data/raw/plaid/` → `python -m f5e.ingest.plaid` → SQLite |
+| `plaid-export` | "pull plaid / sync US accounts" | Plaid CLI JSON/NDJSON → `data/raw/plaid/` → `python -m f5e.ingest.plaid` → SQLite |
 
 All skills live in `.claude/skills/` (also symlinked into `.opencode/skills/`).
 
@@ -49,6 +49,7 @@ op item list --vault Private --format json | jq '.[] | select(.title | test("X";
 Relevant entries (titles only — values stay in vault):
 - `Kotak Bank` — netbanking (CRN + password; OTP via SMS, no seed)
 - `Zerodha Console` — broker login (user ID + password + TOTP seed → fully automatable login)
+- `Plaid` — client ID + production/sandbox secrets if bypassing dashboard auth
 
 ## Working conventions
 

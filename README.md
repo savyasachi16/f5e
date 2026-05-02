@@ -2,14 +2,24 @@
 
 Personal finance scratchpad — early days. Configured for [Claude Code](https://claude.com/claude-code) and [OpenCode](https://opencode.ai).
 
+## Stack
+
+<a href="https://www.python.org"><img src="https://img.shields.io/badge/Python-3776AB?style=flat&logo=python&logoColor=white" alt="Python" /></a>
+<a href="https://www.sqlite.org"><img src="https://img.shields.io/badge/SQLite-003B57?style=flat&logo=sqlite&logoColor=white" alt="SQLite" /></a>
+<a href="https://docs.astral.sh/uv/"><img src="https://img.shields.io/badge/uv-DE5FE9?style=flat&logo=uv&logoColor=white" alt="uv" /></a>
+<a href="https://docs.pytest.org/"><img src="https://img.shields.io/badge/pytest-0A9EDC?style=flat&logo=pytest&logoColor=white" alt="pytest" /></a>
+<a href="https://playwright.dev"><img src="https://img.shields.io/badge/Playwright-2EAD33?style=flat&logo=playwright&logoColor=white" alt="Playwright" /></a>
+<a href="https://plaid.com/docs/resources/cli/"><img src="https://img.shields.io/badge/Plaid_CLI-111111?style=flat&logo=plaid&logoColor=white" alt="Plaid CLI" /></a>
+
 ## What's here
 
-Two skills so far, plus a Kite MCP wiring. More may follow as I figure out what I actually want this to do.
+Three skills so far, plus a Kite MCP wiring and a SQLite-backed ingestion pipeline.
 
 | | |
 |---|---|
 | [`kotak-export`](.claude/skills/kotak-export/SKILL.md) | Download Kotak Mahindra Bank statements via Playwright + 1Password creds. |
 | [`zerodha-export`](.claude/skills/zerodha-export/SKILL.md) | Pull historical Zerodha trades from Console's internal JSON API + a FIFO P&L analyzer (STCG/LTCG). |
+| [`plaid-export`](.claude/skills/plaid-export/SKILL.md) | Pull US account transactions and investment holdings through Plaid CLI into `data/raw/plaid/`, then ingest into SQLite. |
 | [`kite` MCP](.mcp.json) | Hosted Zerodha Kite Connect MCP (read-only tools allowlisted in `.claude/settings.json`). |
 
 ## Setup
@@ -21,6 +31,7 @@ cd f5e
 # One-time, if you don't already have these:
 brew install 1password-cli
 claude mcp add playwright -s user -- npx -y @playwright/mcp@latest
+./install.sh --check
 ```
 
 Open in Claude Code or OpenCode — both pick up [`CLAUDE.md`](CLAUDE.md) automatically.
@@ -30,6 +41,10 @@ Open in Claude Code or OpenCode — both pick up [`CLAUDE.md`](CLAUDE.md) automa
 ```
 .claude/        # Claude Code config + skills
 .opencode/      # OpenCode config (skills symlinked from .claude)
+db/             # SQLite schema
+data/           # gitignored finances.db + raw exports
+f5e/            # Python package: db helpers, ingesters, analyzers
+tests/          # pytest suite with synthetic fixtures
 .mcp.json       # MCP servers
 CLAUDE.md       # project context
 opencode.json   # OpenCode config

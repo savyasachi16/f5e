@@ -16,8 +16,8 @@ Use Plaid's official CLI for the US side of this repo. Raw API responses go unde
 - `plaid` CLI installed:
   `brew install plaid/plaid-cli/plaid`
 - `op` CLI authed
-- Plaid account registered:
-  `plaid register`
+- Plaid dashboard login completed:
+  `plaid login`
 - Plaid **Trial Plan** approved in the dashboard so real institutions are allowed
 - 1Password entry titled `Plaid` with:
   - `client_id`
@@ -26,9 +26,9 @@ Use Plaid's official CLI for the US side of this repo. Raw API responses go unde
 
 ## Link a new institution
 
-1. Run `plaid link`
+1. Run `plaid item link --products transactions,investments`
 2. Complete the browser-based Link flow
-3. Save the returned `access_token` into the `Plaid` 1Password item under a clear field name
+3. The CLI stores the linked Item in its local config. If you need raw credentials outside the CLI, save them to 1Password separately.
 
 ## Export transactions
 
@@ -42,12 +42,9 @@ Example:
 
 ```bash
 mkdir -p data/raw/plaid/chase
-plaid transactions get \
-  --access-token "$(op item get Plaid --vault Private --fields chase_token --reveal)" \
+plaid transactions list --item chase --json \
   > "data/raw/plaid/chase/$(date +%F)-transactions.json"
 ```
-
-If the CLI needs explicit app credentials in your environment, pull them from 1Password first and export them in the current shell before running `plaid ...`.
 
 ## Export holdings
 
@@ -61,8 +58,7 @@ Example:
 
 ```bash
 mkdir -p data/raw/plaid/schwab
-plaid investments holdings get \
-  --access-token "$(op item get Plaid --vault Private --fields schwab_token --reveal)" \
+plaid investments holdings --item schwab --json \
   > "data/raw/plaid/schwab/$(date +%F)-holdings.json"
 ```
 
@@ -81,6 +77,7 @@ Current ingester behavior:
   - Plaid `+amount` = money out
   - repo `+amount` = money in
 - preserves account/transaction currency at row level
+- accepts the current Plaid CLI NDJSON output format (`diagnostic` line + payload)
 - logs the run in `ingestion_log`
 
 ## Expected input shape
@@ -97,7 +94,7 @@ The ingester expects one JSON object containing:
 }
 ```
 
-Only the fields relevant to the specific export need to be present. Transactions-only and holdings-only payloads are both supported.
+Only the fields relevant to the specific export need to be present. Transactions-only and holdings-only payloads are both supported. The live CLI currently writes NDJSON with a diagnostic line first; the ingester handles that directly.
 
 ## Verification
 
@@ -123,4 +120,5 @@ sqlite3 data/finances.db "
 
 - Plaid amount signs are inverted relative to this repo. Never insert raw `amount` as-is.
 - If a transaction references an `account_id` absent from the same payload, ingest should fail loudly instead of creating a partial import.
+- Some live exports omit `institution.name` and only include `item.institution_id`; pass `institution="..."` to `plaid.ingest(...)` when you need a stable institution label.
 - Keep raw exports out of git. `data/raw/` is already ignored; don't move files elsewhere without adding ignore rules first.

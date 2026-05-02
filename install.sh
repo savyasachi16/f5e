@@ -107,7 +107,8 @@ Manual steps still required (these can't be scripted):
     (~90% of personal-use applicants approved in <60s)
 
   After Trial Plan approval, run inside the repo:
-    plaid register     # one-time CLI auth
-    plaid link         # browser-based Link flow per institution
+    plaid login                           # one-time dashboard auth
+    plaid item link --products transactions,investments
+                                          # browser-based Link flow per institution
 ────────────────────────────────────────────────────────────────────────────────
 EOF
