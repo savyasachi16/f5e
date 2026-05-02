@@ -101,6 +101,7 @@ Manual steps still required (these can't be scripted):
     - "Kotak Bank"      — netbanking CRN + password
     - "Zerodha Console" — user_id + password + TOTP seed
     - "Plaid"           — client_id + secret + per-Item access_token(s)
+    - "CoinMarketCap"   — API key for `python -m f5e.export.cmc`
 
   Plaid Trial Plan signup:
     https://dashboard.plaid.com/  →  Trial Plan  →  short form
