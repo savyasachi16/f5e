@@ -1,0 +1,74 @@
+{
+  "institution": {
+    "name": "Robinhood"
+  },
+  "accounts": [
+    {
+      "account_id": "acc_brokerage_456",
+      "name": "Robinhood Individual",
+      "official_name": "Robinhood Individual",
+      "type": "investment",
+      "subtype": "brokerage",
+      "balances": {
+        "iso_currency_code": "USD",
+        "current": 2500.0
+      }
+    }
+  ],
+  "investment_transactions": [
+    {
+      "investment_transaction_id": "inv_txn_buy_001",
+      "account_id": "acc_brokerage_456",
+      "security_id": "sec_qqq",
+      "date": "2025-04-01",
+      "transaction_datetime": "2025-04-01T14:35:00Z",
+      "name": "buy - buy 1.5 shares of Invesco QQQ for $500.00 each",
+      "quantity": 1.5,
+      "amount": 750.0,
+      "price": 500.0,
+      "fees": 0,
+      "type": "buy",
+      "subtype": "buy",
+      "iso_currency_code": "USD"
+    },
+    {
+      "investment_transaction_id": "inv_txn_sell_002",
+      "account_id": "acc_brokerage_456",
+      "security_id": "sec_qqq",
+      "date": "2025-04-10",
+      "transaction_datetime": null,
+      "name": "sell - sell 0.5 shares of Invesco QQQ for $520.00 each",
+      "quantity": 0.5,
+      "amount": -260.0,
+      "price": 520.0,
+      "fees": 0,
+      "type": "sell",
+      "subtype": "sell",
+      "iso_currency_code": "USD"
+    },
+    {
+      "investment_transaction_id": "inv_txn_div_003",
+      "account_id": "acc_brokerage_456",
+      "security_id": "sec_qqq",
+      "date": "2025-04-15",
+      "transaction_datetime": null,
+      "name": "cash - Cash dividend of $12.34 from QQQ",
+      "quantity": 1,
+      "amount": -12.34,
+      "price": 0,
+      "fees": 0,
+      "type": "cash",
+      "subtype": "dividend",
+      "iso_currency_code": "USD"
+    }
+  ],
+  "securities": [
+    {
+      "security_id": "sec_qqq",
+      "ticker_symbol": "QQQ",
+      "name": "Invesco QQQ Trust Series 1",
+      "type": "etf",
+      "iso_currency_code": "USD"
+    }
+  ]
+}

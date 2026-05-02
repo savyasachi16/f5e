@@ -6,6 +6,7 @@ Expected input shape:
     "accounts": [...],
     "transactions": [...],   # optional
     "holdings": [...],       # optional
+    "investment_transactions": [...],  # optional
     "securities": [...]      # optional, used with holdings
   }
 
@@ -39,6 +40,10 @@ def _category(txn: dict) -> str | None:
 
 def _description(txn: dict) -> str | None:
     return txn.get("merchant_name") or txn.get("name")
+
+
+def _executed_at(txn: dict) -> str:
+    return txn.get("transaction_datetime") or txn["date"]
 
 
 def _holding_symbol(holding: dict, securities: dict[str, dict]) -> str:
@@ -80,7 +85,9 @@ def _load_payload(path: Path) -> dict:
             if not stripped:
                 continue
             obj = json.loads(stripped)
-            if isinstance(obj, dict) and any(key in obj for key in ("accounts", "transactions", "holdings", "securities")):
+            if isinstance(obj, dict) and any(
+                key in obj for key in ("accounts", "transactions", "holdings", "investment_transactions", "securities")
+            ):
                 payload = obj
         if payload is None:
             raise
@@ -132,6 +139,49 @@ def ingest(
             category=_category(txn),
             raw=txn,
         )
+        if was_insert:
+            added += 1
+        else:
+            updated += 1
+
+    for txn in payload.get("investment_transactions", []):
+        external_id = txn["account_id"]
+        if external_id not in account_ids:
+            raise ValueError(
+                f"investment transaction {txn['investment_transaction_id']} references unknown account {external_id}"
+            )
+
+        security = securities_by_id.get(txn["security_id"], {})
+        txn_type = txn.get("type")
+        txn_subtype = txn.get("subtype")
+
+        if txn_type in {"buy", "sell"}:
+            was_insert = f5e_db.upsert_trade(
+                con,
+                account_id=account_ids[external_id],
+                source_uid=txn["investment_transaction_id"],
+                symbol=security.get("ticker_symbol") or security.get("name") or txn["security_id"],
+                side=txn_type,
+                quantity=txn["quantity"],
+                price=txn["price"],
+                currency=_currency({"balances": security}, txn),
+                executed_at=_executed_at(txn),
+                segment=security.get("type"),
+                raw={"investment_transaction": txn, "security": security},
+            )
+        else:
+            was_insert = f5e_db.upsert_transaction(
+                con,
+                account_id=account_ids[external_id],
+                source_uid=txn["investment_transaction_id"],
+                posted_date=txn["date"],
+                amount=-float(txn["amount"]),
+                currency=_currency({"balances": security}, txn),
+                description=txn.get("name"),
+                category=txn_subtype or txn_type,
+                raw={"investment_transaction": txn, "security": security},
+            )
+
         if was_insert:
             added += 1
         else:

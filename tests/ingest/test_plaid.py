@@ -5,6 +5,7 @@ from f5e.ingest import plaid as pi
 
 TXN_FIXTURE = Path(__file__).parent.parent / "fixtures" / "plaid_transactions_sample.json"
 HOLDINGS_FIXTURE = Path(__file__).parent.parent / "fixtures" / "plaid_holdings_sample.json"
+INVESTMENT_TXN_FIXTURE = Path(__file__).parent.parent / "fixtures" / "plaid_investment_transactions_sample.json"
 
 
 def test_ingest_creates_accounts_and_transactions(con):
@@ -133,3 +134,64 @@ def test_ingest_allows_institution_override(con, tmp_path):
         "SELECT institution FROM accounts WHERE source = 'plaid' AND external_id = 'acc_brokerage_789'"
     ).fetchone()
     assert account["institution"] == "Robinhood"
+
+
+def test_ingest_creates_trades_and_cash_transactions_from_investment_transactions(con):
+    added, updated = pi.ingest(con, INVESTMENT_TXN_FIXTURE)
+    assert added == 3
+    assert updated == 0
+
+    account = con.execute(
+        """
+        SELECT source, institution, external_id, account_type, currency, nickname
+        FROM accounts
+        """
+    ).fetchone()
+    assert account["source"] == "plaid"
+    assert account["institution"] == "Robinhood"
+    assert account["external_id"] == "acc_brokerage_456"
+    assert account["account_type"] == "brokerage"
+    assert account["currency"] == "USD"
+    assert account["nickname"] == "Robinhood Individual"
+
+    trades = con.execute(
+        """
+        SELECT source_uid, symbol, side, quantity, price, currency, executed_at, segment
+        FROM trades
+        ORDER BY source_uid
+        """
+    ).fetchall()
+    assert len(trades) == 2
+    assert [t["source_uid"] for t in trades] == ["inv_txn_buy_001", "inv_txn_sell_002"]
+    assert [t["symbol"] for t in trades] == ["QQQ", "QQQ"]
+    assert [t["side"] for t in trades] == ["buy", "sell"]
+    assert [t["quantity"] for t in trades] == [1.5, 0.5]
+    assert [t["price"] for t in trades] == [500.0, 520.0]
+    assert [t["executed_at"] for t in trades] == ["2025-04-01T14:35:00Z", "2025-04-10"]
+    assert [t["segment"] for t in trades] == ["etf", "etf"]
+
+    txns = con.execute(
+        """
+        SELECT source_uid, posted_date, amount, currency, description, category
+        FROM transactions
+        ORDER BY source_uid
+        """
+    ).fetchall()
+    assert len(txns) == 1
+    assert txns[0]["source_uid"] == "inv_txn_div_003"
+    assert txns[0]["posted_date"] == "2025-04-15"
+    assert txns[0]["amount"] == 12.34
+    assert txns[0]["currency"] == "USD"
+    assert txns[0]["category"] == "dividend"
+
+
+def test_ingest_investment_transactions_idempotent(con):
+    a1, _ = pi.ingest(con, INVESTMENT_TXN_FIXTURE)
+    a2, u2 = pi.ingest(con, INVESTMENT_TXN_FIXTURE)
+    assert a1 == 3
+    assert a2 == 0
+    assert u2 == 3
+    trades = con.execute("SELECT COUNT(*) AS n FROM trades").fetchone()["n"]
+    txns = con.execute("SELECT COUNT(*) AS n FROM transactions").fetchone()["n"]
+    assert trades == 2
+    assert txns == 1

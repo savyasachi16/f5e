@@ -1,6 +1,6 @@
 ---
 name: plaid-export
-description: Pull US account data through Plaid's official CLI, persist raw JSON under data/raw/plaid, then ingest it into SQLite. Use when the user asks to sync Plaid, fetch US accounts, or import transactions or holdings from a linked US institution.
+description: Pull US account data through Plaid's official CLI, persist raw JSON under data/raw/plaid, then ingest it into SQLite. Use when the user asks to sync Plaid, fetch US accounts, or import cash transactions, investment transactions, or holdings from a linked US institution.
 allowed-tools:
   - Bash
   - Read
@@ -62,6 +62,22 @@ plaid investments holdings --item schwab --json \
   > "data/raw/plaid/schwab/$(date +%F)-holdings.json"
 ```
 
+## Export investment transactions
+
+Suggested layout:
+
+```text
+data/raw/plaid/<institution>/<YYYY-MM-DD>-investment-transactions.json
+```
+
+Example:
+
+```bash
+mkdir -p data/raw/plaid/robinhood
+plaid investments transactions --item robinhood --json \
+  > "data/raw/plaid/robinhood/$(date +%F)-investment-transactions.json"
+```
+
 ## Ingest into SQLite
 
 ```bash
@@ -72,6 +88,9 @@ Current ingester behavior:
 
 - creates/updates `accounts` rows with `source='plaid'`
 - ingests `transactions`
+- ingests `investment_transactions`
+  - `buy` / `sell` → `trades`
+  - `cash` / `dividend` style entries → `transactions`
 - ingests investment `holdings` when the payload includes `holdings` + `securities`
 - flips Plaid amount signs to repo convention:
   - Plaid `+amount` = money out
@@ -89,6 +108,7 @@ The ingester expects one JSON object containing:
   "institution": {"name": "Chase"},
   "accounts": [...],
   "transactions": [...],
+  "investment_transactions": [...],
   "holdings": [...],
   "securities": [...]
 }

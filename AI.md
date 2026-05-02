@@ -9,7 +9,7 @@ Tooling for analyzing personal finances across Indian (Kotak, Zerodha) **and US 
 | Kotak Mahindra Bank netbanking | Playwright + 1Password | Statement PDFs |
 | Zerodha Console (`console.zerodha.com`) | Playwright + internal JSON API | Historical trades, tax P&L, ledger |
 | Zerodha Kite Connect | Kite MCP (hosted) | Live data: holdings, positions, LTP, quotes, OHLC, historical, GTTs |
-| Plaid (US accounts) | Plaid official CLI + Trial Plan | Transactions and investment holdings via `plaid-export` |
+| Plaid (US accounts) | Plaid official CLI + Trial Plan | Cash transactions, investment transactions, and holdings via `plaid-export` |
 
 ## Skills
 
@@ -17,7 +17,7 @@ Tooling for analyzing personal finances across Indian (Kotak, Zerodha) **and US 
 |---|---|---|
 | `kotak-export` | "download Kotak statements" | Playwright-driven statement export, handles ngbDatepicker traps |
 | `zerodha-export` | "pull Zerodha tradebook / tax P&L" | Console internal-API export → `data/raw/zerodha/` → `python -m f5e.ingest.zerodha` → SQLite |
-| `plaid-export` | "pull plaid / sync US accounts" | Plaid CLI JSON/NDJSON → `data/raw/plaid/` → `python -m f5e.ingest.plaid` → SQLite |
+| `plaid-export` | "pull plaid / sync US accounts" | Plaid CLI JSON/NDJSON → `data/raw/plaid/` → `python -m f5e.ingest.plaid` → SQLite (`transactions`, `trades`, `holdings`) |
 
 All skills live in `.claude/skills/` (also symlinked into `.opencode/skills/`).
 
