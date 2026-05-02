@@ -68,6 +68,33 @@ def _exists(con: sqlite3.Connection, table: str, account_id: int, source_uid: st
     return row is not None
 
 
+def _asset_row(
+    con: sqlite3.Connection,
+    *,
+    source: str,
+    asset_class: str,
+    name: str,
+    external_id: str | None,
+) -> sqlite3.Row | None:
+    if external_id is not None:
+        return con.execute(
+            """
+            SELECT id
+            FROM assets
+            WHERE source = ? AND asset_class = ? AND external_id = ?
+            """,
+            (source, asset_class, external_id),
+        ).fetchone()
+    return con.execute(
+        """
+        SELECT id
+        FROM assets
+        WHERE source = ? AND asset_class = ? AND name = ? AND external_id IS NULL
+        """,
+        (source, asset_class, name),
+    ).fetchone()
+
+
 def upsert_trade(
     con: sqlite3.Connection,
     *,
@@ -175,6 +202,92 @@ def upsert_holding(
             None if avg_cost is None else float(avg_cost),
             None if market_value is None else float(market_value),
             currency, _maybe_json(raw),
+        ),
+    )
+    return inserted
+
+
+def upsert_asset(
+    con: sqlite3.Connection,
+    *,
+    source: str,
+    asset_class: str,
+    name: str,
+    currency: str,
+    external_id: str | None = None,
+    notes: str | None = None,
+) -> int:
+    row = _asset_row(
+        con,
+        source=source,
+        asset_class=asset_class,
+        name=name,
+        external_id=external_id,
+    )
+    if row is None:
+        con.execute(
+            """
+            INSERT INTO assets (source, asset_class, name, external_id, currency, notes)
+            VALUES (?, ?, ?, ?, ?, ?)
+            """,
+            (source, asset_class, name, external_id, currency, notes),
+        )
+    else:
+        con.execute(
+            """
+            UPDATE assets
+            SET name = ?, external_id = ?, currency = ?, notes = ?
+            WHERE id = ?
+            """,
+            (name, external_id, currency, notes, row["id"]),
+        )
+
+    row = _asset_row(
+        con,
+        source=source,
+        asset_class=asset_class,
+        name=name,
+        external_id=external_id,
+    )
+    return row["id"]
+
+
+def upsert_asset_snapshot(
+    con: sqlite3.Connection,
+    *,
+    asset_id: int,
+    as_of_date: str,
+    market_value: float,
+    currency: str,
+    quantity: float | None = None,
+    unit_price: float | None = None,
+    raw: Any = None,
+) -> bool:
+    row = con.execute(
+        "SELECT 1 FROM asset_snapshots WHERE asset_id = ? AND as_of_date = ?",
+        (asset_id, as_of_date),
+    ).fetchone()
+    inserted = row is None
+    con.execute(
+        """
+        INSERT INTO asset_snapshots
+          (asset_id, as_of_date, quantity, unit_price, market_value, currency, raw)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(asset_id, as_of_date) DO UPDATE SET
+          quantity = excluded.quantity,
+          unit_price = excluded.unit_price,
+          market_value = excluded.market_value,
+          currency = excluded.currency,
+          raw = excluded.raw
+        """,
+        (
+            asset_id,
+            as_of_date,
+            None if quantity is None else float(quantity),
+            None if unit_price is None else float(unit_price),
+            float(market_value),
+            currency,
+            _maybe_json(raw),
         ),
     )
     return inserted
