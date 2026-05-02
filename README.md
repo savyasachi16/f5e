@@ -14,7 +14,7 @@ Personal finance scratchpad — early days. Configured for [Claude Code](https:/
 
 ## What's here
 
-Three skills so far, plus a Kite MCP wiring and a SQLite-backed ingestion pipeline.
+Three skills so far, plus a Kite MCP wiring, a SQLite-backed ingestion pipeline, and manual non-brokerage asset snapshots.
 
 | | |
 |---|---|
@@ -22,6 +22,8 @@ Three skills so far, plus a Kite MCP wiring and a SQLite-backed ingestion pipeli
 | [`zerodha-export`](.claude/skills/zerodha-export/SKILL.md) | Pull historical Zerodha trades from Console's internal JSON API + a FIFO P&L analyzer (STCG/LTCG). |
 | [`plaid-export`](.claude/skills/plaid-export/SKILL.md) | Pull US cash transactions, investment transactions, and holdings through Plaid CLI into `data/raw/plaid/`, with `python -m f5e.export.plaid` handling pagination when needed. |
 | [`kite` MCP](.mcp.json) | Hosted Zerodha Kite Connect MCP (read-only tools allowlisted in `.claude/settings.json`). |
+
+Manual asset snapshots also land in SQLite through `python -m f5e.ingest.assets <path>`, using JSON under `data/raw/assets/`.
 
 ## Setup
 
@@ -43,7 +45,7 @@ Open in Claude Code or OpenCode — both pick up [`CLAUDE.md`](CLAUDE.md) automa
 .claude/        # Claude Code config + skills
 .opencode/      # OpenCode config (skills symlinked from .claude)
 db/             # SQLite schema
-data/           # gitignored finances.db + raw exports
+data/           # gitignored finances.db + raw exports/assets
 f5e/            # Python package: db helpers, ingesters, analyzers
 tests/          # pytest suite with synthetic fixtures
 .mcp.json       # MCP servers

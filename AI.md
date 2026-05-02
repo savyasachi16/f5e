@@ -10,6 +10,7 @@ Tooling for analyzing personal finances across Indian (Kotak, Zerodha) **and US 
 | Zerodha Console (`console.zerodha.com`) | Playwright + internal JSON API | Historical trades, tax P&L, ledger |
 | Zerodha Kite Connect | Kite MCP (hosted) | Live data: holdings, positions, LTP, quotes, OHLC, historical, GTTs |
 | Plaid (US accounts) | Plaid official CLI + Trial Plan | Cash transactions, investment transactions, and holdings via `plaid-export` |
+| Manual assets | Local JSON files | Vehicle/private-equity/crypto snapshots via `python -m f5e.ingest.assets` |
 
 ## Skills
 
@@ -72,12 +73,12 @@ f5e/
 ├── .opencode/
 │   ├── skills/                # symlink → ../.claude/skills
 │   └── commands/              # slash-command shims
-├── data/                      # gitignored — finances.db + raw/{zerodha,kotak,plaid}/
+├── data/                      # gitignored — finances.db + raw/{zerodha,kotak,plaid,assets}/
 ├── db/schema.sql              # idempotent SQLite schema
 ├── f5e/                       # Python package (`pdfplumber` runtime for Kotak PDF parsing)
 │   ├── db.py                  # connect(), apply_schema(), upsert_*()
 │   ├── export/plaid.py        # paginated Plaid CLI export helper
-│   ├── ingest/{zerodha,plaid,kotak}.py
+│   ├── ingest/{zerodha,plaid,kotak,assets}.py
 │   └── analyze/fifo_pnl.py    # FIFO STCG/LTCG over the trades table
 ├── tests/                     # pytest, in-memory SQLite fixtures, synthetic data only
 ├── pyproject.toml             # uv-managed (`uv sync`, `uv run pytest`)
@@ -90,8 +91,10 @@ f5e/
 ## Data flow
 
 1. **Pull** — a `*-export` skill writes raw JSON/PDF to `data/raw/<source>/<period>.{json,pdf}`.
+   - manual assets use JSON under `data/raw/assets/`
 2. **Ingest** — `python -m f5e.ingest.<source> <path>` upserts into `data/finances.db`. Idempotent on `(account_id, source_uid)` — re-running is safe.
    - Kotak currently targets the extracted text shape covered by `tests/fixtures/kotak_statement_sample.txt` and will need refinement against live statement variants.
+   - assets use separate `assets` / `asset_snapshots` tables and are snapshot-only in v1
 3. **Analyze** — `python -m f5e.analyze.fifo_pnl` (or ad-hoc SQL via `sqlite3 data/finances.db`).
 
 ## Testing
