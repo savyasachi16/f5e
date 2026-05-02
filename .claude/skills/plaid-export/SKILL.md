@@ -96,6 +96,64 @@ python -m f5e.export.plaid investment_transactions robinhood 2020-01-01 2026-05-
   data/raw/plaid/robinhood/2026-05-02-investment-transactions-merged.json
 ```
 
+## Per-institution recipes
+
+Each linked institution lives under `data/raw/plaid/<slug>/`. The slug also
+acts as the fallback for institution name when the payload omits it; known
+slugs (`chase`, `etrade`, `capitalone`, `discover`, `schwab`, `robinhood`)
+resolve to canonical brand names automatically.
+
+### Chase (depository + credit)
+
+```bash
+mkdir -p data/raw/plaid/chase
+plaid transactions list --item chase --json \
+  > "data/raw/plaid/chase/$(date +%F)-transactions.json"
+python -m f5e.ingest.plaid "data/raw/plaid/chase/$(date +%F)-transactions.json"
+```
+
+### E*TRADE (brokerage)
+
+```bash
+mkdir -p data/raw/plaid/etrade
+plaid investments holdings --item etrade --json \
+  > "data/raw/plaid/etrade/$(date +%F)-holdings.json"
+python -m f5e.export.plaid investment_transactions etrade 2020-01-01 "$(date +%F)" \
+  "data/raw/plaid/etrade/$(date +%F)-investment-transactions.json"
+python -m f5e.ingest.plaid "data/raw/plaid/etrade/$(date +%F)-holdings.json"
+python -m f5e.ingest.plaid "data/raw/plaid/etrade/$(date +%F)-investment-transactions.json"
+```
+
+### Capital One (credit)
+
+```bash
+mkdir -p data/raw/plaid/capitalone
+plaid transactions list --item capitalone --json \
+  > "data/raw/plaid/capitalone/$(date +%F)-transactions.json"
+python -m f5e.ingest.plaid "data/raw/plaid/capitalone/$(date +%F)-transactions.json"
+```
+
+### Discover (credit)
+
+```bash
+mkdir -p data/raw/plaid/discover
+plaid transactions list --item discover --json \
+  > "data/raw/plaid/discover/$(date +%F)-transactions.json"
+python -m f5e.ingest.plaid "data/raw/plaid/discover/$(date +%F)-transactions.json"
+```
+
+### Schwab (brokerage + bank)
+
+```bash
+mkdir -p data/raw/plaid/schwab
+plaid investments holdings --item schwab --json \
+  > "data/raw/plaid/schwab/$(date +%F)-holdings.json"
+plaid transactions list --item schwab --json \
+  > "data/raw/plaid/schwab/$(date +%F)-transactions.json"
+python -m f5e.ingest.plaid "data/raw/plaid/schwab/$(date +%F)-holdings.json"
+python -m f5e.ingest.plaid "data/raw/plaid/schwab/$(date +%F)-transactions.json"
+```
+
 ## Ingest into SQLite
 
 ```bash
