@@ -7,7 +7,15 @@ def test_apply_schema_creates_expected_tables(con):
         "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name"
     ).fetchall()
     names = {r["name"] for r in rows}
-    assert {"accounts", "transactions", "trades", "holdings", "ingestion_log"} <= names
+    assert {
+        "accounts",
+        "transactions",
+        "trades",
+        "holdings",
+        "assets",
+        "asset_snapshots",
+        "ingestion_log",
+    } <= names
 
 
 def test_upsert_account_is_idempotent(con):
@@ -108,4 +116,77 @@ def test_upsert_holding_idempotent(con):
     )
     assert a is True and b is False
     n = con.execute("SELECT COUNT(*) AS n FROM holdings").fetchone()["n"]
+    assert n == 1
+
+
+def test_upsert_asset_is_idempotent(con):
+    a1 = f5e_db.upsert_asset(
+        con,
+        source="manual",
+        asset_class="vehicle",
+        name="Model Y",
+        currency="USD",
+    )
+    a2 = f5e_db.upsert_asset(
+        con,
+        source="manual",
+        asset_class="vehicle",
+        name="Model Y",
+        currency="USD",
+    )
+    assert a1 == a2
+    n = con.execute("SELECT COUNT(*) AS n FROM assets").fetchone()["n"]
+    assert n == 1
+
+
+def test_upsert_asset_uses_external_id_when_present(con):
+    a1 = f5e_db.upsert_asset(
+        con,
+        source="cmc",
+        asset_class="crypto",
+        name="Ledger BTC",
+        external_id="wallet-btc",
+        currency="USD",
+    )
+    a2 = f5e_db.upsert_asset(
+        con,
+        source="cmc",
+        asset_class="crypto",
+        name="Ledger BTC Updated",
+        external_id="wallet-btc",
+        currency="USD",
+    )
+    assert a1 == a2
+    row = con.execute("SELECT name FROM assets WHERE id = ?", (a1,)).fetchone()
+    assert row["name"] == "Ledger BTC Updated"
+
+
+def test_upsert_asset_snapshot_idempotent(con):
+    aid = f5e_db.upsert_asset(
+        con,
+        source="manual",
+        asset_class="private_equity",
+        name="Acme SAFE",
+        currency="USD",
+    )
+    a = f5e_db.upsert_asset_snapshot(
+        con,
+        asset_id=aid,
+        as_of_date="2026-05-02",
+        market_value=18000.0,
+        currency="USD",
+        quantity=None,
+        unit_price=None,
+    )
+    b = f5e_db.upsert_asset_snapshot(
+        con,
+        asset_id=aid,
+        as_of_date="2026-05-02",
+        market_value=18000.0,
+        currency="USD",
+        quantity=None,
+        unit_price=None,
+    )
+    assert a is True and b is False
+    n = con.execute("SELECT COUNT(*) AS n FROM asset_snapshots").fetchone()["n"]
     assert n == 1

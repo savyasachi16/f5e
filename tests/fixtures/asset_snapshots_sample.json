@@ -1,0 +1,33 @@
+{
+  "assets": [
+    {
+      "source": "manual",
+      "asset_class": "vehicle",
+      "name": "Model Y",
+      "as_of_date": "2026-05-02",
+      "currency": "USD",
+      "market_value": 32000.0,
+      "notes": "KBB midpoint"
+    },
+    {
+      "source": "manual",
+      "asset_class": "private_equity",
+      "name": "Acme Seed SAFE",
+      "as_of_date": "2026-05-02",
+      "currency": "USD",
+      "market_value": 18000.0,
+      "notes": "Last 409A"
+    },
+    {
+      "source": "cmc",
+      "asset_class": "crypto",
+      "name": "Ledger BTC",
+      "symbol": "BTC",
+      "as_of_date": "2026-05-02",
+      "currency": "USD",
+      "quantity": 0.25,
+      "unit_price": 96000.0,
+      "market_value": 24000.0
+    }
+  ]
+}
