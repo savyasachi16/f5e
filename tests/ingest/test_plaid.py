@@ -136,6 +136,44 @@ def test_ingest_allows_institution_override(con, tmp_path):
     assert account["institution"] == "Robinhood"
 
 
+def test_ingest_resolves_institution_from_sidecar_metadata(con, tmp_path):
+    payload = json.loads(HOLDINGS_FIXTURE.read_text())
+    payload.pop("institution")
+    payload["item"] = {"institution_id": "ins_54"}
+
+    export_dir = tmp_path / "robinhood"
+    export_dir.mkdir()
+    path = export_dir / "holdings.json"
+    path.write_text(json.dumps(payload))
+    (export_dir / "institution.json").write_text(
+        json.dumps({"institution": {"institution_id": "ins_54", "name": "Robinhood"}})
+    )
+
+    pi.ingest(con, path)
+
+    account = con.execute(
+        "SELECT institution FROM accounts WHERE source = 'plaid' AND external_id = 'acc_brokerage_789'"
+    ).fetchone()
+    assert account["institution"] == "Robinhood"
+
+
+def test_ingest_falls_back_to_parent_dir_for_institution_name(con, tmp_path):
+    payload = json.loads(HOLDINGS_FIXTURE.read_text())
+    payload.pop("institution")
+
+    export_dir = tmp_path / "robinhood"
+    export_dir.mkdir()
+    path = export_dir / "holdings.json"
+    path.write_text(json.dumps(payload))
+
+    pi.ingest(con, path)
+
+    account = con.execute(
+        "SELECT institution FROM accounts WHERE source = 'plaid' AND external_id = 'acc_brokerage_789'"
+    ).fetchone()
+    assert account["institution"] == "Robinhood"
+
+
 def test_ingest_creates_trades_and_cash_transactions_from_investment_transactions(con):
     added, updated = pi.ingest(con, INVESTMENT_TXN_FIXTURE)
     assert added == 3

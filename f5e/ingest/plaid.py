@@ -42,6 +42,41 @@ def _description(txn: dict) -> str | None:
     return txn.get("merchant_name") or txn.get("name")
 
 
+def _read_institution_sidecar(path: Path, institution_id: str | None) -> str | None:
+    sidecar = path.parent / "institution.json"
+    if not sidecar.exists():
+        return None
+    payload = json.loads(sidecar.read_text())
+    institution = payload.get("institution") or {}
+    if institution_id and institution.get("institution_id") not in (None, institution_id):
+        return None
+    return institution.get("name")
+
+
+def _titleize_slug(text: str) -> str:
+    return " ".join(part.capitalize() for part in text.replace("_", " ").replace("-", " ").split())
+
+
+def _resolve_institution_name(path: Path, payload: dict, institution: str | None) -> str:
+    if institution:
+        return institution
+
+    payload_name = payload.get("institution", {}).get("name")
+    if payload_name:
+        return payload_name
+
+    institution_id = payload.get("item", {}).get("institution_id")
+    sidecar_name = _read_institution_sidecar(path, institution_id)
+    if sidecar_name:
+        return sidecar_name
+
+    parent_name = path.parent.name
+    if parent_name and parent_name not in {"plaid", "raw", "data"}:
+        return _titleize_slug(parent_name)
+
+    return "Plaid"
+
+
 def _executed_at(txn: dict) -> str:
     return txn.get("transaction_datetime") or txn["date"]
 
@@ -104,7 +139,7 @@ def ingest(
     path = Path(path)
     payload = _load_payload(path)
 
-    institution_name = institution or payload.get("institution", {}).get("name") or "Plaid"
+    institution_name = _resolve_institution_name(path, payload, institution)
     account_ids: dict[str, int] = {}
     accounts_by_external_id = {account["account_id"]: account for account in payload.get("accounts", [])}
     securities_by_id = {security["security_id"]: security for security in payload.get("securities", [])}
