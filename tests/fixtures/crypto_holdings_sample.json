@@ -1,0 +1,22 @@
+{
+  "assets": [
+    {
+      "source": "manual",
+      "asset_class": "crypto",
+      "name": "Ledger BTC",
+      "symbol": "BTC",
+      "as_of_date": "2026-05-02",
+      "currency": "USD",
+      "quantity": 0.25
+    },
+    {
+      "source": "manual",
+      "asset_class": "crypto",
+      "name": "Kraken ETH",
+      "symbol": "ETH",
+      "as_of_date": "2026-05-02",
+      "currency": "USD",
+      "quantity": 2.0
+    }
+  ]
+}
