@@ -78,6 +78,17 @@ plaid investments transactions --item robinhood --json \
   > "data/raw/plaid/robinhood/$(date +%F)-investment-transactions.json"
 ```
 
+For long histories, page explicitly. The CLI defaults to `--count 100`:
+
+```bash
+plaid investments transactions --item robinhood \
+  --start-date 2020-01-01 --end-date 2026-05-02 \
+  --count 100 --offset 0   --json > data/raw/plaid/robinhood/2026-05-02-investment-transactions-page-1.json
+plaid investments transactions --item robinhood \
+  --start-date 2020-01-01 --end-date 2026-05-02 \
+  --count 100 --offset 100 --json > data/raw/plaid/robinhood/2026-05-02-investment-transactions-page-2.json
+```
+
 ## Ingest into SQLite
 
 ```bash
@@ -141,4 +152,5 @@ sqlite3 data/finances.db "
 - Plaid amount signs are inverted relative to this repo. Never insert raw `amount` as-is.
 - If a transaction references an `account_id` absent from the same payload, ingest should fail loudly instead of creating a partial import.
 - Some live exports omit `institution.name` and only include `item.institution_id`; pass `institution="..."` to `plaid.ingest(...)` when you need a stable institution label.
+- `plaid transactions list` and `plaid investments transactions` page at 100 rows by default. If the page comes back with exactly 100 rows, keep paging with `--offset`.
 - Keep raw exports out of git. `data/raw/` is already ignored; don't move files elsewhere without adding ignore rules first.
