@@ -1,0 +1,18 @@
+{
+  "assets": [
+    {
+      "name": "2022 Tesla Model Y",
+      "vin": "5YJYGDEE7NF000001",
+      "mileage": 18000,
+      "zip": "94103",
+      "currency": "USD"
+    },
+    {
+      "name": "2021 Yamaha MT-07",
+      "vin": "JYARM18E5MA000002",
+      "mileage": 4200,
+      "zip": "94103",
+      "currency": "USD"
+    }
+  ]
+}
