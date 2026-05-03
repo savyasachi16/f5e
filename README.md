@@ -49,8 +49,10 @@ data/           # gitignored finances.db + raw exports/assets
 f5e/            # Python package: db helpers, ingesters, analyzers
 tests/          # pytest suite with synthetic fixtures
 .mcp.json       # MCP servers
-CLAUDE.md       # project context
+AI.md           # project context (CLAUDE.md / OPENCODE.md / GEMINI.md symlinks)
 opencode.json   # OpenCode config
+pyproject.toml  # uv-managed deps
+install.sh      # one-shot setup + --check
 ```
 
 ## Privacy
