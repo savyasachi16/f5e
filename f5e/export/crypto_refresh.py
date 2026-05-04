@@ -55,7 +55,7 @@ def fetch_coingecko_prices(symbols: list[str]) -> dict[str, float]:
 def _latest_crypto_holdings(con) -> list[dict]:
     rows = con.execute(
         """
-        SELECT a.id AS asset_id, a.name, a.external_id AS symbol, a.currency,
+        SELECT a.id AS asset_id, a.name, a.source, a.external_id AS symbol, a.currency,
                s.quantity, s.as_of_date
         FROM assets a
         JOIN asset_snapshots s ON s.asset_id = a.id
@@ -96,7 +96,9 @@ def refresh(
         price = float(prices[sym])
         qty = float(h["quantity"]) if h["quantity"] is not None else 0.0
         enriched.append({
-            "source": "coingecko",
+            # preserve the existing asset's source so we update the same row
+            # rather than creating a parallel "coingecko" asset
+            "source": h["source"],
             "asset_class": "crypto",
             "name": h["name"],
             "external_id": sym,
@@ -105,6 +107,7 @@ def refresh(
             "quantity": qty,
             "unit_price": price,
             "market_value": qty * price,
+            "notes": "priced via CoinGecko",
         })
 
     output_path.write_text(json.dumps({"assets": enriched}, separators=(",", ":")))

@@ -41,7 +41,9 @@ def test_refresh_writes_snapshot_per_asset(con, tmp_path):
     assert by_sym["ETH"]["market_value"] == 5000.0
     assert by_sym["ETH"]["quantity"] == 2.0
     assert all(a["asset_class"] == "crypto" for a in payload["assets"])
-    assert all(a["source"] == "coingecko" for a in payload["assets"])
+    # source is preserved from the existing asset row so the refresh updates
+    # the same record rather than creating a parallel asset
+    assert all(a["source"] == "cmc" for a in payload["assets"])
     assert all(a["as_of_date"] == "2026-05-03" for a in payload["assets"])
 
 
