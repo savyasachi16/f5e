@@ -1,0 +1,26 @@
+{
+  "user_id": "ABC123",
+  "as_of_date": "2026-05-03",
+  "holdings": [
+    {
+      "tradingsymbol": "RELIANCE",
+      "exchange": "NSE",
+      "isin": "INE002A01018",
+      "quantity": 10,
+      "average_price": 2300.50,
+      "last_price": 2640.75,
+      "close_price": 2625.00,
+      "pnl": 3402.50
+    },
+    {
+      "tradingsymbol": "TCS",
+      "exchange": "NSE",
+      "isin": "INE467B01029",
+      "quantity": 5,
+      "average_price": 3500.00,
+      "last_price": 4100.00,
+      "close_price": 4080.00,
+      "pnl": 3000.00
+    }
+  ]
+}
