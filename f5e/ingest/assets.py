@@ -7,7 +7,15 @@ from pathlib import Path
 
 from f5e import db as f5e_db
 
-ASSET_CLASSES = {"vehicle", "private_equity", "crypto"}
+ASSET_CLASSES = {
+    "vehicle",
+    "private_equity",
+    "crypto",
+    "brokerage",   # aggregated holdings without per-position detail
+    "ulip",        # insurance-linked investment plan
+    "cash",        # cash account snapshot (no transaction-level detail)
+    "real_estate",
+}
 
 
 def _load_payload(path: Path) -> list[dict]:

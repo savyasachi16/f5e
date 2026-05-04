@@ -56,7 +56,7 @@ CREATE TABLE IF NOT EXISTS holdings (
 CREATE TABLE IF NOT EXISTS assets (
   id              INTEGER PRIMARY KEY,
   source          TEXT NOT NULL,
-  asset_class     TEXT NOT NULL CHECK(asset_class IN ('vehicle','private_equity','crypto')),
+  asset_class     TEXT NOT NULL,
   name            TEXT NOT NULL,
   external_id     TEXT,
   currency        TEXT NOT NULL,

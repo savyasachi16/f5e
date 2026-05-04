@@ -39,9 +39,13 @@ _ASSET_CLASS_BUCKETS: dict[str, str] = {
     "vehicle": "vehicles",
     "private_equity": "private equity",
     "crypto": "crypto",
+    "brokerage": "brokerage",
+    "ulip": "insurance",
+    "cash": "cash",
+    "real_estate": "real estate",
 }
 
-_BUCKET_ORDER = ["cash", "brokerage", "retirement", "vehicles", "private equity", "crypto", "liabilities", "other"]
+_BUCKET_ORDER = ["cash", "brokerage", "retirement", "real estate", "vehicles", "private equity", "crypto", "insurance", "liabilities", "other"]
 
 
 def _bucket_for_account(account_type: str | None) -> str:
