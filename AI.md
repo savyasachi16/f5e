@@ -94,12 +94,14 @@ f5e/
 
 1. **Pull** — a `*-export` skill writes raw JSON/PDF to `data/raw/<source>/<period>.{json,pdf}`.
    - manual assets use JSON under `data/raw/assets/`
-   - crypto holdings can be enriched with `python -m f5e.export.cmc <input> <output>`
+   - crypto holdings can be enriched with `python -m f5e.export.cmc <input> <output>` (CMC paid API, key required)
+   - crypto values can be **auto-refreshed daily** with `python -m f5e.export.crypto_refresh <output>` — reads existing crypto assets from the DB, prices them via CoinGecko's free public API, writes a snapshot JSON ready for `f5e.ingest.assets`. No key needed.
    - US vehicles can be priced with `python -m f5e.export.vehicle <input> <output>` (MarketCheck VIN-based predict)
 2. **Ingest** — `python -m f5e.ingest.<source> <path>` upserts into `data/finances.db`. Idempotent on `(account_id, source_uid)` — re-running is safe.
    - Kotak currently targets the extracted text shape covered by `tests/fixtures/kotak_statement_sample.txt` and will need refinement against live statement variants.
    - assets use separate `assets` / `asset_snapshots` tables and are snapshot-only in v1
 3. **Analyze** — `python -m f5e.analyze.fifo_pnl` (or ad-hoc SQL via `sqlite3 data/finances.db`).
+   - `python -m f5e.analyze.networth [--inr-per-usd N]` aggregates latest balances + holdings + asset snapshots into a bucketed net-worth report.
 
 ## Testing
 

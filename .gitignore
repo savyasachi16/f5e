@@ -25,3 +25,7 @@ htmlcov/
 data/finances.db
 data/finances.db-*
 data/raw/
+data/*.zip
+
+# macOS
+.DS_Store
