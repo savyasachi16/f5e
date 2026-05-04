@@ -293,6 +293,45 @@ def upsert_asset_snapshot(
     return inserted
 
 
+def upsert_balance(
+    con: sqlite3.Connection,
+    *,
+    account_id: int,
+    as_of_date: str,
+    currency: str,
+    current: float | None = None,
+    available: float | None = None,
+    limit_amount: float | None = None,
+    raw: Any = None,
+) -> bool:
+    row = con.execute(
+        "SELECT 1 FROM balances WHERE account_id = ? AND as_of_date = ?",
+        (account_id, as_of_date),
+    ).fetchone()
+    inserted = row is None
+    con.execute(
+        """
+        INSERT INTO balances
+          (account_id, as_of_date, current, available, limit_amount, currency, raw)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(account_id, as_of_date) DO UPDATE SET
+          current = excluded.current,
+          available = excluded.available,
+          limit_amount = excluded.limit_amount,
+          currency = excluded.currency,
+          raw = excluded.raw
+        """,
+        (
+            account_id, as_of_date,
+            None if current is None else float(current),
+            None if available is None else float(available),
+            None if limit_amount is None else float(limit_amount),
+            currency, _maybe_json(raw),
+        ),
+    )
+    return inserted
+
+
 def log_ingestion(con: sqlite3.Connection, source: str, added: int, updated: int, notes: str = "") -> None:
     con.execute(
         "INSERT INTO ingestion_log (source, rows_added, rows_updated, notes) VALUES (?, ?, ?, ?)",

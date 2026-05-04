@@ -78,6 +78,19 @@ CREATE TABLE IF NOT EXISTS asset_snapshots (
   UNIQUE(asset_id, as_of_date)
 );
 
+CREATE TABLE IF NOT EXISTS balances (
+  id              INTEGER PRIMARY KEY,
+  account_id      INTEGER NOT NULL REFERENCES accounts(id),
+  as_of_date      TEXT NOT NULL,
+  current         REAL,
+  available       REAL,
+  limit_amount    REAL,
+  currency        TEXT NOT NULL,
+  raw             TEXT,
+  ingested_at     TEXT NOT NULL DEFAULT (datetime('now')),
+  UNIQUE(account_id, as_of_date)
+);
+
 CREATE TABLE IF NOT EXISTS ingestion_log (
   id              INTEGER PRIMARY KEY,
   source          TEXT NOT NULL,
@@ -92,3 +105,5 @@ CREATE INDEX IF NOT EXISTS ix_txn_account ON transactions(account_id);
 CREATE INDEX IF NOT EXISTS ix_trade_sym   ON trades(symbol, executed_at);
 CREATE INDEX IF NOT EXISTS ix_asset_snapshot_date ON asset_snapshots(as_of_date);
 CREATE INDEX IF NOT EXISTS ix_asset_snapshot_asset ON asset_snapshots(asset_id);
+CREATE INDEX IF NOT EXISTS ix_balance_date ON balances(as_of_date);
+CREATE INDEX IF NOT EXISTS ix_balance_account ON balances(account_id);

@@ -14,6 +14,7 @@ Amounts are normalized to the repo convention:
   positive = inflow, negative = outflow.
 Plaid uses the inverse sign, so values are multiplied by -1 on ingest.
 """
+import datetime as dt
 import json
 import sys
 from pathlib import Path
@@ -93,6 +94,13 @@ def _resolve_institution_name(path: Path, payload: dict, institution: str | None
     return "Plaid"
 
 
+def _payload_balance_date(payload: dict) -> str:
+    for candidate in (payload.get("as_of_date"), payload.get("date")):
+        if candidate:
+            return candidate
+    return dt.date.today().isoformat()
+
+
 def _executed_at(txn: dict) -> str:
     return txn.get("transaction_datetime") or txn["date"]
 
@@ -160,6 +168,7 @@ def ingest(
     accounts_by_external_id = {account["account_id"]: account for account in payload.get("accounts", [])}
     securities_by_id = {security["security_id"]: security for security in payload.get("securities", [])}
 
+    balance_date = _payload_balance_date(payload)
     for external_id, account in accounts_by_external_id.items():
         external_id = account["account_id"]
         account_ids[external_id] = f5e_db.upsert_account(
@@ -171,6 +180,18 @@ def ingest(
             account_type=account.get("subtype") or account.get("type"),
             nickname=account.get("official_name") or account.get("name"),
         )
+        balances = account.get("balances") or {}
+        if balances.get("current") is not None or balances.get("available") is not None:
+            f5e_db.upsert_balance(
+                con,
+                account_id=account_ids[external_id],
+                as_of_date=balance_date,
+                currency=_currency(account),
+                current=balances.get("current"),
+                available=balances.get("available"),
+                limit_amount=balances.get("limit"),
+                raw=balances,
+            )
 
     added = 0
     updated = 0
