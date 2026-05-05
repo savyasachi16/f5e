@@ -1,6 +1,5 @@
 import json
 import subprocess
-from pathlib import Path
 
 from f5e.export import plaid as pe
 

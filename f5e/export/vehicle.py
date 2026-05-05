@@ -14,8 +14,9 @@ import statistics
 import sys
 import urllib.parse
 import urllib.request
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 Fetcher = Callable[..., dict[str, Any]]
 

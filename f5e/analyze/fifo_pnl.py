@@ -72,7 +72,9 @@ def open_lots(con, *, account_id: int | None = None) -> dict[str, list]:
     rows = con.execute(sql, args).fetchall()
     queues: dict[str, deque] = defaultdict(deque)
     for r in rows:
-        sym = r["symbol"]; qty = float(r["quantity"]); px = float(r["price"])
+        sym = r["symbol"]
+        qty = float(r["quantity"])
+        px = float(r["price"])
         dt = datetime.fromisoformat(r["executed_at"]).date()
         if r["side"] == "buy":
             queues[sym].append([qty, px, dt])

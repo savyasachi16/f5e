@@ -72,6 +72,7 @@ def test_upsert_trade_rejects_bad_side(con):
         external_id="ZX1234", currency="INR",
     )
     import sqlite3
+
     import pytest as _pytest
     with _pytest.raises(sqlite3.IntegrityError):
         f5e_db.upsert_trade(

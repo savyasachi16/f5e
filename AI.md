@@ -131,6 +131,7 @@ f5e/
 ## Testing
 
 - `uv sync` once, then `uv run pytest` for the suite.
+- `uv run ruff check f5e tests` for lint.
 - Tests use **in-memory SQLite** (`:memory:` fixture in `tests/conftest.py`) and **synthetic** sample data under `tests/fixtures/` - never copy real exports there.
 - New ingestion modules: write a failing test against a synthetic fixture before implementing.
 

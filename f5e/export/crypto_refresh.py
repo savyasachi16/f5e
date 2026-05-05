@@ -12,8 +12,8 @@ import json
 import sys
 import urllib.parse
 import urllib.request
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Callable
 
 from f5e import db as f5e_db
 

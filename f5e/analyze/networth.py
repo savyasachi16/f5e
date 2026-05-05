@@ -14,7 +14,6 @@ from typing import Any
 
 from f5e import db as f5e_db
 
-
 # Buckets, ordered for display
 _ACCOUNT_TYPE_BUCKETS: dict[str, str] = {
     "checking": "cash",

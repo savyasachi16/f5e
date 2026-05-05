@@ -1,4 +1,3 @@
-from datetime import date
 from pathlib import Path
 
 import pytest
@@ -53,7 +52,7 @@ def test_unmatched_sell_flagged(con):
 
 def test_fifo_splits_across_lots(con):
     """End-to-end on the sample fixture - verifies the multi-lot split math."""
-    aid = f5e_db.upsert_account(
+    f5e_db.upsert_account(
         con, source="zerodha", institution="Zerodha", external_id="ZX1234", currency="INR",
     )
     zi.ingest(con, FIXTURE, external_id="ZX1234")
@@ -91,7 +90,9 @@ def test_parity_with_legacy_script(con):
     import json
     from collections import defaultdict, deque
     from datetime import datetime as _dt
-    trades = json.load(open(src))
+
+    with src.open() as f:
+        trades = json.load(f)
     # Mirror the ingest-side dedup: composite (order_id, trade_id) is the real PK.
     seen: set[tuple] = set()
     deduped = []
@@ -107,7 +108,8 @@ def test_parity_with_legacy_script(con):
     legacy_totals = {"STCG": 0.0, "LTCG": 0.0}
     for t in trades:
         sym = t["tradingsymbol"]
-        qty = int(t["quantity"]); px = float(t["price"])
+        qty = int(t["quantity"])
+        px = float(t["price"])
         dt = _dt.fromisoformat(t["order_execution_time"]).date()
         if t["trade_type"] == "buy":
             queues[sym].append([qty, px, dt])
