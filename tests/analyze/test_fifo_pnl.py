@@ -1,3 +1,4 @@
+from datetime import date
 from pathlib import Path
 
 import pytest
@@ -9,15 +10,26 @@ from f5e.ingest import zerodha as zi
 FIXTURE = Path(__file__).parent.parent / "fixtures" / "zerodha_trades_sample.json"
 
 
-def _seed_one(con, *, side: str, symbol: str = "TESTCO", quantity: int, price: float, executed_at: str, source_uid: str):
+def _seed_one(
+    con,
+    *,
+    side: str,
+    symbol: str = "TESTCO",
+    quantity: int,
+    price: float,
+    executed_at: str,
+    source_uid: str,
+    external_id: str = "ZX1234",
+):
     aid = f5e_db.upsert_account(
-        con, source="zerodha", institution="Zerodha", external_id="ZX1234", currency="INR",
+        con, source="zerodha", institution="Zerodha", external_id=external_id, currency="INR",
     )
     f5e_db.upsert_trade(
         con, account_id=aid, source_uid=source_uid, symbol=symbol,
         side=side, quantity=quantity, price=price, currency="INR",
         executed_at=executed_at,
     )
+    return aid
 
 
 def test_stcg_classification(con):
@@ -66,6 +78,72 @@ def test_fifo_splits_across_lots(con):
             by_type[r["type"]] += r["pnl"]
     assert by_type["STCG"] == pytest.approx(800.0)
     assert by_type["LTCG"] == pytest.approx(200.0)
+
+
+def test_open_lots_after_partial_sell(con):
+    _seed_one(con, side="buy", quantity=10, price=100, executed_at="2024-01-15T09:30:00", source_uid="b1")
+    _seed_one(con, side="sell", quantity=4, price=150, executed_at="2024-06-15T09:30:00", source_uid="s1")
+
+    lots = fifo_pnl.open_lots(con)
+
+    assert lots["TESTCO"] == [[6.0, 100.0, date(2024, 1, 15)]]
+
+
+def test_open_lots_empty_after_full_sell(con):
+    _seed_one(con, side="buy", quantity=10, price=100, executed_at="2024-01-15T09:30:00", source_uid="b1")
+    _seed_one(con, side="sell", quantity=10, price=150, executed_at="2024-06-15T09:30:00", source_uid="s1")
+
+    assert "TESTCO" not in fifo_pnl.open_lots(con)
+
+
+def test_open_lots_account_filter(con):
+    first = _seed_one(
+        con,
+        side="buy",
+        symbol="FIRST",
+        quantity=10,
+        price=100,
+        executed_at="2024-01-15T09:30:00",
+        source_uid="b1",
+        external_id="first",
+    )
+    _seed_one(
+        con,
+        side="buy",
+        symbol="SECOND",
+        quantity=5,
+        price=200,
+        executed_at="2024-01-16T09:30:00",
+        source_uid="b2",
+        external_id="second",
+    )
+
+    lots = fifo_pnl.open_lots(con, account_id=first)
+
+    assert list(lots) == ["FIRST"]
+
+
+def test_fy_boundary():
+    assert fifo_pnl._fy(date(2024, 3, 31)) == "FY2023-24"
+    assert fifo_pnl._fy(date(2024, 4, 1)) == "FY2024-25"
+
+
+def test_cli_runs_on_empty_db(con, monkeypatch, capsys):
+    monkeypatch.setattr(f5e_db, "connect", lambda: con)
+
+    assert fifo_pnl._cli(["fifo_pnl"]) == 0
+
+    assert "REALIZED P&L SUMMARY" in capsys.readouterr().out
+
+
+def test_print_summary_includes_fy_breakdown(con, capsys):
+    _seed_one(con, side="buy", quantity=10, price=100, executed_at="2024-04-01T09:30:00", source_uid="b1")
+    _seed_one(con, side="sell", quantity=10, price=150, executed_at="2024-06-15T09:30:00", source_uid="s1")
+    realized = fifo_pnl.compute_realized(con)
+
+    fifo_pnl._print_summary(realized)
+
+    assert "FY2024-25" in capsys.readouterr().out
 
 
 LEGACY = Path(__file__).resolve().parents[2] / "zerodha-trades-eq.json"
