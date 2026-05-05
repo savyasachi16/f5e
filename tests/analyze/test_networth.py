@@ -118,3 +118,15 @@ def test_render_omits_empty_buckets_and_shows_total(con):
     assert "NET WORTH" in output
     assert "[CASH]" in output
     assert "[BROKERAGE]" not in output
+
+
+def test_cli_uses_inr_rate(con, monkeypatch, capsys):
+    account = _account(con, account_type="savings", external_id="savings", currency="INR")
+    f5e_db.upsert_balance(con, account_id=account, as_of_date="2026-05-01", current=8300, currency="INR")
+    monkeypatch.setattr(f5e_db, "connect", lambda: con)
+
+    assert networth._cli(["networth", "--inr-per-usd", "83"]) == 0
+
+    output = capsys.readouterr().out
+    assert "NET WORTH" in output
+    assert "100.00 USD" in output
