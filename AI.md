@@ -24,7 +24,12 @@ All skills live in `.claude/skills/` (also symlinked into `.opencode/skills/`).
 
 ## MCPs
 
-- **`kite`** (project scope, hosted, `https://mcp.kite.trade/mcp`) — Zerodha live data. **Read-only tools allowlisted** in `.claude/settings.json` (16 of 22). Write tools (`place_order`, `modify_*`, `cancel_*`, `*_gtt_*`) require explicit user confirmation each time.
+- **`kite`** (project scope, hosted, `https://mcp.kite.trade/mcp`) — Zerodha live data.
+  - Claude Code: server declared in `.mcp.json`, read-only tool allowlist in `.claude/settings.json`
+  - Codex: project config in `.codex/config.toml`
+  - Gemini CLI: workspace config in `.gemini/settings.json`
+  - OpenCode: project config in `opencode.json`
+  - only read-only tools are exposed by default across agents; write tools (`place_order`, `modify_*`, `cancel_*`, `*_gtt_*`) stay disabled unless explicitly enabled later
 - **`playwright`** (user scope) — browser automation; needed by both skills above.
 
 ## PII — non-negotiable
@@ -70,8 +75,12 @@ Relevant entries (titles only — values stay in vault):
 ```
 f5e/
 ├── .claude/
-│   ├── settings.json          # Kite read-only allowlist
+│   ├── settings.json          # Claude Code Kite read-only allowlist
 │   └── skills/{kotak,zerodha,plaid}-export/SKILL.md
+├── .codex/
+│   └── config.toml            # Codex project-local MCP config
+├── .gemini/
+│   └── settings.json          # Gemini workspace MCP config
 ├── .opencode/
 │   ├── skills/                # symlink → ../.claude/skills
 │   └── commands/              # slash-command shims
@@ -84,11 +93,27 @@ f5e/
 │   └── analyze/fifo_pnl.py    # FIFO STCG/LTCG over the trades table
 ├── tests/                     # pytest, in-memory SQLite fixtures, synthetic data only
 ├── pyproject.toml             # uv-managed (`uv sync`, `uv run pytest`)
-├── .mcp.json                  # Kite MCP (Claude Code reads this)
-├── opencode.json              # OpenCode equivalent
-├── CLAUDE.md                  # this file (symlink to AI.md, also referenced from opencode.json)
+├── .mcp.json                  # Claude Code MCP server declaration
+├── opencode.json              # OpenCode project config
+├── CLAUDE.md                  # symlink -> AI.md
+├── GEMINI.md                  # symlink -> AI.md
+├── OPENCODE.md                # symlink -> AI.md
+├── AGENTS.md                  # symlink -> AI.md
 └── .gitignore
 ```
+
+## Agent parity
+
+- Shared instructions live in `AI.md` and must stay symlinked from `CLAUDE.md`, `GEMINI.md`, `OPENCODE.md`, and `AGENTS.md`.
+- Kite MCP is intentionally configured per agent because the CLIs do not share one config format:
+  - Claude Code: `.mcp.json` + `.claude/settings.json`
+  - Codex: `.codex/config.toml`
+  - Gemini CLI: `.gemini/settings.json`
+  - OpenCode: `opencode.json`
+- Quick checks:
+  - `codex mcp list`
+  - `gemini mcp list`
+  - `opencode mcp list`
 
 ## Data flow
 

@@ -27,5 +27,9 @@ data/finances.db-*
 data/raw/
 data/*.zip
 
+# Session / scratch dirs
+.tmp/
+STATE.md
+
 # macOS
 .DS_Store
