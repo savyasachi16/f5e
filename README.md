@@ -1,6 +1,6 @@
 # f5e
 
-Personal finance pipeline — pulls cash, brokerage, retirement, and manual asset data from US (Plaid) and India (Kotak, Zerodha, Kite MCP) into one local SQLite DB for analysis. Configured for [Claude Code](https://claude.com/claude-code), [Codex](https://developers.openai.com/codex/), [Gemini CLI](https://github.com/google-gemini/gemini-cli), and [OpenCode](https://opencode.ai).
+Personal finance pipeline - pulls cash, brokerage, retirement, and manual asset data from US (Plaid) and India (Kotak, Zerodha, Kite MCP) into one local SQLite DB for analysis. Configured for [Claude Code](https://claude.com/claude-code), [Codex](https://developers.openai.com/codex/), [Gemini CLI](https://github.com/google-gemini/gemini-cli), and [OpenCode](https://opencode.ai).
 
 ## Stack
 
@@ -23,7 +23,7 @@ Three skills so far, plus a Kite MCP wiring, a SQLite-backed ingestion pipeline,
 | [`plaid-export`](.claude/skills/plaid-export/SKILL.md) | Pull US cash transactions, investment transactions, and holdings through Plaid CLI into `data/raw/plaid/`, with `python -m f5e.export.plaid` handling pagination when needed. Per-institution recipes for Chase, Discover, Capital One, E*TRADE, Schwab, Robinhood; canonical slug→name fallback when a payload omits institution metadata. |
 | [`kite` MCP](.mcp.json) | Hosted Zerodha Kite Connect MCP. Project-local config is wired for Claude Code (`.mcp.json` + `.claude/settings.json`), Codex (`.codex/config.toml`), Gemini CLI (`.gemini/settings.json`), and OpenCode (`opencode.json`). |
 
-Manual asset snapshots also land in SQLite through `python -m f5e.ingest.assets <path>`, using JSON under `data/raw/assets/`. Crypto holdings can be enriched first with `python -m f5e.export.cmc <input> <output>`, or auto-refreshed daily with `python -m f5e.export.crypto_refresh <output>` (CoinGecko free public API, no key needed); US vehicles with `python -m f5e.export.vehicle <input> <output>` (MarketCheck — VIN-based predict for cars, listing-median fallback for motorcycles).
+Manual asset snapshots also land in SQLite through `python -m f5e.ingest.assets <path>`, using JSON under `data/raw/assets/`. Crypto holdings can be enriched first with `python -m f5e.export.cmc <input> <output>`, or auto-refreshed daily with `python -m f5e.export.crypto_refresh <output>` (CoinGecko free public API, no key needed); US vehicles with `python -m f5e.export.vehicle <input> <output>` (MarketCheck - VIN-based predict for cars, listing-median fallback for motorcycles).
 
 Net worth across cash, brokerage, retirement, vehicles, and crypto via `python -m f5e.analyze.networth [--inr-per-usd N]`.
 

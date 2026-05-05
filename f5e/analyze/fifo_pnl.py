@@ -109,7 +109,7 @@ def _print_summary(realized: list[dict]) -> None:
             legs, pnl, qty = totals[typ]
             print(f"{typ:<10} {legs:>5} {qty:>10.0f} ₹{pnl:>16,.2f}")
 
-    print(f"\n{'='*78}\nP&L BY FINANCIAL YEAR (Indian FY: Apr–Mar)\n{'='*78}\n")
+    print(f"\n{'='*78}\nP&L BY FINANCIAL YEAR (Indian FY: Apr-Mar)\n{'='*78}\n")
     fy_pnl: dict[str, dict] = defaultdict(lambda: {"STCG": 0.0, "LTCG": 0.0, "legs": 0})
     for r in realized:
         if r["pnl"] is None:

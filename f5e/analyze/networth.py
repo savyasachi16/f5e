@@ -91,7 +91,7 @@ def collect(con, *, rates: dict[str, float] | None = None, display_currency: str
             amount = -amount
         rows.append({
             "bucket": bucket,
-            "label": f"{r['institution']} — {r['nickname'] or r['account_type']}",
+            "label": f"{r['institution']} - {r['nickname'] or r['account_type']}",
             "currency": r["bal_ccy"],
             "amount": amount,
             "amount_display": _convert(amount, r["bal_ccy"], rates, display_currency),
@@ -99,7 +99,7 @@ def collect(con, *, rates: dict[str, float] | None = None, display_currency: str
             "source": "balance",
         })
 
-    # holdings — only for accounts WITHOUT a balance row (avoid double-count)
+    # holdings - only for accounts WITHOUT a balance row (avoid double-count)
     holding_rows = con.execute(
         """
         SELECT a.id, a.institution, a.account_type, a.nickname,
@@ -119,7 +119,7 @@ def collect(con, *, rates: dict[str, float] | None = None, display_currency: str
         amount = float(r["market_value"])
         rows.append({
             "bucket": bucket,
-            "label": f"{r['institution']} — {r['symbol']}",
+            "label": f"{r['institution']} - {r['symbol']}",
             "currency": r["currency"],
             "amount": amount,
             "amount_display": _convert(amount, r["currency"], rates, display_currency),
@@ -127,7 +127,7 @@ def collect(con, *, rates: dict[str, float] | None = None, display_currency: str
             "source": "holding",
         })
 
-    # asset snapshots — latest per asset
+    # asset snapshots - latest per asset
     asset_rows = con.execute(
         """
         SELECT a.asset_class, a.name, s.market_value, s.currency, s.as_of_date

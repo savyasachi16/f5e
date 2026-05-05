@@ -7,7 +7,7 @@ allowed-tools:
   - Write
 ---
 
-# /plaid-export — Plaid CLI Export + SQLite Ingest
+# /plaid-export: Plaid CLI Export + SQLite Ingest
 
 Use Plaid's official CLI for the US side of this repo. Raw API responses go under `data/raw/plaid/`; normalized rows land in `data/finances.db` through `python -m f5e.ingest.plaid`.
 

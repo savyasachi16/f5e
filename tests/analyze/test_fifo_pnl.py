@@ -52,7 +52,7 @@ def test_unmatched_sell_flagged(con):
 
 
 def test_fifo_splits_across_lots(con):
-    """End-to-end on the sample fixture — verifies the multi-lot split math."""
+    """End-to-end on the sample fixture - verifies the multi-lot split math."""
     aid = f5e_db.upsert_account(
         con, source="zerodha", institution="Zerodha", external_id="ZX1234", currency="INR",
     )
@@ -60,7 +60,7 @@ def test_fifo_splits_across_lots(con):
 
     realized = fifo_pnl.compute_realized(con)
     # Sell 1: 8 @ 150 against buy1 (8 of 10 @ 100), STCG, pnl = 400
-    # Sell 2: 7 @ 200 splits — 2 @ 100 (LTCG, pnl=200) + 5 @ 120 (STCG, pnl=400)
+    # Sell 2: 7 @ 200 splits - 2 @ 100 (LTCG, pnl=200) + 5 @ 120 (STCG, pnl=400)
     by_type = {"STCG": 0.0, "LTCG": 0.0}
     for r in realized:
         if r["pnl"] is not None:

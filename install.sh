@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# f5e installer — idempotent. Sets up every dependency required to run the
+# f5e installer: idempotent. Sets up every dependency required to run the
 # skills and the f5e Python package on macOS.
 #
 # Usage:  ./install.sh           # full setup
@@ -65,7 +65,7 @@ elif command -v claude >/dev/null 2>&1; then
     ok "playwright MCP registered"
   fi
 else
-  miss "claude CLI not found — skipping Playwright MCP registration"
+  miss "claude CLI not found - skipping Playwright MCP registration"
 fi
 
 # ── 3. Python deps via uv ────────────────────────────────────────────────────
@@ -98,10 +98,10 @@ cat <<'EOF'
 Manual steps still required (these can't be scripted):
 
   1Password vault must contain entries:
-    - "Kotak Bank"      — netbanking CRN + password
-    - "Zerodha Console" — user_id + password + TOTP seed
-    - "Plaid"           — client_id + secret + per-Item access_token(s)
-    - "CoinMarketCap"   — API key for `python -m f5e.export.cmc`
+    - "Kotak Bank"      - netbanking CRN + password
+    - "Zerodha Console" - user_id + password + TOTP seed
+    - "Plaid"           - client_id + secret + per-Item access_token(s)
+    - "CoinMarketCap"   - API key for `python -m f5e.export.cmc`
 
   Plaid Trial Plan signup:
     https://dashboard.plaid.com/  →  Trial Plan  →  short form

@@ -7,7 +7,7 @@ allowed-tools:
   - Write
 ---
 
-# /kotak-export — Kotak Statement Export
+# /kotak-export: Kotak Statement Export
 
 Drives `netbanking.kotak.com/knb2/` via Playwright MCP and saves PDFs to a local path. The user relays the SMS+email OTP at login.
 
@@ -28,10 +28,10 @@ Drives `netbanking.kotak.com/knb2/` via Playwright MCP and saves PDFs to a local
 2. `mcp__playwright__browser_navigate` to `https://netbanking.kotak.com/knb2/`
 3. Fill CRN + password, click "Secure login"
 4. **OTP screen**: before submitting, set the *"GO DIRECTLY TO HOME"* combobox to **"Statements"** so you land on the right page post-OTP and skip a navigation hop.
-5. Ask the user for the OTP — it goes to the registered mobile + email.
+5. Ask the user for the OTP - it goes to the registered mobile + email.
 6. Enter OTP, submit.
 
-No re-OTP is required for statement downloads (good). But the browser session can die between tool calls and the page resets to `about:blank` — re-login is the only fix. Each login = one new OTP.
+No re-OTP is required for statement downloads (good). But the browser session can die between tool calls and the page resets to `about:blank` - re-login is the only fix. Each login = one new OTP.
 
 ## Easy path: Annual Statements
 
@@ -54,7 +54,7 @@ Kotak uses ng-bootstrap's `ngbDatepicker`. Two non-obvious behaviours:
 
 1. **Typed `value` on the date input is silently rejected.** Setting `input.value = "31/03/2024"` and dispatching `input`/`change` events appears to work but the form-control resets it. You **must** use the calendar widget.
 
-2. **The To-picker, when reopened, shows TODAY's month — not From's month.** If you naively click "31" expecting March, you get `31/<current-month>/<current-year>`. Always navigate via the year/month `<select>` dropdowns first.
+2. **The To-picker, when reopened, shows TODAY's month - not From's month.** If you naively click "31" expecting March, you get `31/<current-month>/<current-year>`. Always navigate via the year/month `<select>` dropdowns first.
 
 Reliable picker-driving snippet (run inside `mcp__playwright__browser_evaluate`):
 
@@ -85,7 +85,7 @@ async () => {
 
 - **≤ 365 days** → Apply button enabled, direct download path.
 - **> 365 days** → modal replaces Apply with "Receive by post" / "Receive by email" only. No direct PDF.
-- **From auto-clamps** to the account-opening date — picking earlier silently snaps forward.
+- **From auto-clamps** to the account-opening date - picking earlier silently snaps forward.
 
 To back-fill multi-year history: split into ≤365-day chunks (e.g. one per calendar year + a tail). Combined with the Annual Statements panel covering current + previous FY, **2 Advanced Filter chunks per account** is usually enough for ~3 years of history.
 
@@ -129,8 +129,8 @@ The page re-renders with the new account's data; no re-login needed.
 
 ## Gotchas reference
 
-- `browser_evaluate` results truncate at ~200KB. Don't dump full DOM — query targeted selectors only.
+- `browser_evaluate` results truncate at ~200KB. Don't dump full DOM - query targeted selectors only.
 - `browser_snapshot` element refs go stale fast on this Angular SPA. Prefer JS-based selection by text + className.
-- Format-choice popovers (PDF/CSV/etc.) attach to the body, not the button — they survive re-renders. Match by `li.list-format` + visible.
-- The login-page landing-page combobox saves a click later — set it before submitting OTP.
+- Format-choice popovers (PDF/CSV/etc.) attach to the body, not the button - they survive re-renders. Match by `li.list-format` + visible.
+- The login-page landing-page combobox saves a click later - set it before submitting OTP.
 - Closing Balance figure on the filtered Recent Transactions view confirms the filter actually applied (vs. reset to single-day).

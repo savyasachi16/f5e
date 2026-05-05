@@ -1,6 +1,6 @@
-# f5e — Personal Finance Analysis & Advice
+# f5e: Personal Finance Analysis & Advice
 
-Tooling for analyzing personal finances across Indian (Kotak, Zerodha) **and US (Plaid)** providers — owner is an NRI with accounts on both sides. Used for tax planning, P&L analysis, and investment decisions. All ingested data lands in a single SQLite DB at `data/finances.db` (gitignored).
+Tooling for analyzing personal finances across Indian (Kotak, Zerodha) **and US (Plaid)** providers - owner is an NRI with accounts on both sides. Used for tax planning, P&L analysis, and investment decisions. All ingested data lands in a single SQLite DB at `data/finances.db` (gitignored).
 
 ## Data sources
 
@@ -24,27 +24,27 @@ All skills live in `.claude/skills/` (also symlinked into `.opencode/skills/`).
 
 ## MCPs
 
-- **`kite`** (project scope, hosted, `https://mcp.kite.trade/mcp`) — Zerodha live data.
+- **`kite`** (project scope, hosted, `https://mcp.kite.trade/mcp`) - Zerodha live data.
   - Claude Code: server declared in `.mcp.json`, read-only tool allowlist in `.claude/settings.json`
   - Codex: project config in `.codex/config.toml`
   - Gemini CLI: workspace config in `.gemini/settings.json`
   - OpenCode: project config in `opencode.json`
   - only read-only tools are exposed by default across agents; write tools (`place_order`, `modify_*`, `cancel_*`, `*_gtt_*`) stay disabled unless explicitly enabled later
-- **`playwright`** (user scope) — browser automation; needed by both skills above.
+- **`playwright`** (user scope) - browser automation; needed by both skills above.
 
-## PII — non-negotiable
+## PII: non-negotiable
 
 This repo is **PUBLIC on GitHub**. The `.gitignore` blocks PII-bearing files; never push:
 
-- `data/finances.db` + `data/raw/` — everything ingested, including raw exports kept for re-ingest
-- `*.pdf`, `*.png`, `*.jpg` — screenshots and statements show account numbers, balances, real names
-- `.playwright-mcp/` — cached browser session, console logs
+- `data/finances.db` + `data/raw/` - everything ingested, including raw exports kept for re-ingest
+- `*.pdf`, `*.png`, `*.jpg` - screenshots and statements show account numbers, balances, real names
+- `.playwright-mcp/` - cached browser session, console logs
 
 Add new PII-producing filename patterns to `.gitignore` *before* generating them.
 
 ## Credentials
 
-All in 1Password — never inline. CLI:
+All in 1Password - never inline. CLI:
 
 ```bash
 op item get "<entry>" --vault Private --fields <field> --reveal   # password/secret
@@ -52,23 +52,23 @@ op item get "<entry>" --vault Private --otp                       # current TOTP
 op item list --vault Private --format json | jq '.[] | select(.title | test("X"; "i")) | .title'   # find entry
 ```
 
-Relevant entries (titles only — values stay in vault):
-- `Kotak Bank` — netbanking (CRN + password; OTP via SMS, no seed)
-- `Zerodha Console` — broker login (user ID + password + TOTP seed → fully automatable login)
-- `Plaid` — client ID + production/sandbox secrets if bypassing dashboard auth
-- `CoinMarketCap` — API key for crypto quote enrichment
-- `MarketCheck` — API key for US vehicle price enrichment (`api_key` field)
+Relevant entries (titles only - values stay in vault):
+- `Kotak Bank` - netbanking (CRN + password; OTP via SMS, no seed)
+- `Zerodha Console` - broker login (user ID + password + TOTP seed → fully automatable login)
+- `Plaid` - client ID + production/sandbox secrets if bypassing dashboard auth
+- `CoinMarketCap` - API key for crypto quote enrichment
+- `MarketCheck` - API key for US vehicle price enrichment (`api_key` field)
 
 ## Working conventions
 
 - **Long analyses → disk, not chat.** Write JSON to a `.gitignore`d path, run a `.py` analyzer, summarize the result. Don't dump tradebook arrays into the conversation.
 - **Browser downloads land in `.playwright-mcp/`.** Move to a stable named path with the period in the filename (`<acct>/<period>.pdf`).
-- **For tax filings, use Zerodha's official Tax P&L report** (charges-adjusted) — not my FIFO calc which excludes brokerage/STT/GST.
+- **For tax filings, use Zerodha's official Tax P&L report** (charges-adjusted) - not my FIFO calc which excludes brokerage/STT/GST.
 - **Capital-loss math (Indian equity, post-23-Jul-2024 rates):**
   - STCL → offsets STCG (20%) **and** LTCG (12.5%)
   - LTCL → offsets only LTCG
   - Carry forward 8 AYs; **must file ITR by due date** to claim
-- **No wash-sale rule in India** — sell-and-rebuy to harvest losses is legal, but spread across days to avoid scrutiny on obvious round-tripping.
+- **No wash-sale rule in India** - sell-and-rebuy to harvest losses is legal, but spread across days to avoid scrutiny on obvious round-tripping.
 
 ## Repo layout
 
@@ -84,7 +84,7 @@ f5e/
 ├── .opencode/
 │   ├── skills/                # symlink → ../.claude/skills
 │   └── commands/              # slash-command shims
-├── data/                      # gitignored — finances.db + raw/{zerodha,kotak,plaid,assets}/
+├── data/                      # gitignored - finances.db + raw/{zerodha,kotak,plaid,assets}/
 ├── db/schema.sql              # idempotent SQLite schema
 ├── f5e/                       # Python package (`pdfplumber` runtime for Kotak PDF parsing)
 │   ├── db.py                  # connect(), apply_schema(), upsert_*()
@@ -117,21 +117,21 @@ f5e/
 
 ## Data flow
 
-1. **Pull** — a `*-export` skill writes raw JSON/PDF to `data/raw/<source>/<period>.{json,pdf}`.
+1. **Pull**: a `*-export` skill writes raw JSON/PDF to `data/raw/<source>/<period>.{json,pdf}`.
    - manual assets use JSON under `data/raw/assets/`
    - crypto holdings can be enriched with `python -m f5e.export.cmc <input> <output>` (CMC paid API, key required)
-   - crypto values can be **auto-refreshed daily** with `python -m f5e.export.crypto_refresh <output>` — reads existing crypto assets from the DB, prices them via CoinGecko's free public API, writes a snapshot JSON ready for `f5e.ingest.assets`. No key needed.
+   - crypto values can be **auto-refreshed daily** with `python -m f5e.export.crypto_refresh <output>` - reads existing crypto assets from the DB, prices them via CoinGecko's free public API, writes a snapshot JSON ready for `f5e.ingest.assets`. No key needed.
    - US vehicles can be priced with `python -m f5e.export.vehicle <input> <output>` (MarketCheck VIN-based predict)
-2. **Ingest** — `python -m f5e.ingest.<source> <path>` upserts into `data/finances.db`. Idempotent on `(account_id, source_uid)` — re-running is safe.
+2. **Ingest**: `python -m f5e.ingest.<source> <path>` upserts into `data/finances.db`. Idempotent on `(account_id, source_uid)` - re-running is safe.
    - Kotak currently targets the extracted text shape covered by `tests/fixtures/kotak_statement_sample.txt` and will need refinement against live statement variants.
    - assets use separate `assets` / `asset_snapshots` tables and are snapshot-only in v1
-3. **Analyze** — `python -m f5e.analyze.fifo_pnl` (or ad-hoc SQL via `sqlite3 data/finances.db`).
+3. **Analyze**: `python -m f5e.analyze.fifo_pnl` (or ad-hoc SQL via `sqlite3 data/finances.db`).
    - `python -m f5e.analyze.networth [--inr-per-usd N]` aggregates latest balances + holdings + asset snapshots into a bucketed net-worth report.
 
 ## Testing
 
 - `uv sync` once, then `uv run pytest` for the suite.
-- Tests use **in-memory SQLite** (`:memory:` fixture in `tests/conftest.py`) and **synthetic** sample data under `tests/fixtures/` — never copy real exports there.
+- Tests use **in-memory SQLite** (`:memory:` fixture in `tests/conftest.py`) and **synthetic** sample data under `tests/fixtures/` - never copy real exports there.
 - New ingestion modules: write a failing test against a synthetic fixture before implementing.
 
 ## Tone & style

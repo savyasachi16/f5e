@@ -7,11 +7,11 @@ allowed-tools:
   - Write
 ---
 
-# /zerodha-export — Zerodha Console Data Export
+# /zerodha-export: Zerodha Console Data Export
 
 The Kite Connect API (and the official Kite MCP that wraps it) only exposes **today's** orders and trades. Historical trade history, tax P&L, ledger, and contract notes live exclusively in Zerodha **Console** (`console.zerodha.com`).
 
-This skill drives Console via Playwright MCP, captures the session, and calls Console's *internal* JSON endpoints directly — much faster than scraping HTML/PDF reports and reusable for any Console page.
+This skill drives Console via Playwright MCP, captures the session, and calls Console's *internal* JSON endpoints directly - much faster than scraping HTML/PDF reports and reusable for any Console page.
 
 ## When to use vs. when to skip
 
@@ -22,10 +22,10 @@ This skill drives Console via Playwright MCP, captures the session, and calls Co
 
 - **Playwright MCP** at user scope: `claude mcp add playwright -s user -- npx -y @playwright/mcp@latest`
 - **1Password CLI** authed (`op vault list` works)
-- **1Password entry** for Zerodha with these fields (the OTP field stores the TOTP seed so login is fully automatable — no human relay):
+- **1Password entry** for Zerodha with these fields (the OTP field stores the TOTP seed so login is fully automatable - no human relay):
   - `username` (User ID, e.g. `XXX###`)
   - `password` (CONCEALED)
-  - `one-time password` (OTP type — TOTP seed)
+  - `one-time password` (OTP type - TOTP seed)
 
 Find your entry: `op item list --vault Private --format json | jq '.[] | select(.title | test("zerodha|kite"; "i")) | .title'`
 
@@ -43,11 +43,11 @@ Find your entry: `op item list --vault Private --format json | jq '.[] | select(
 5. Once on `/dashboard`, the session cookies (`public_token`, `enctoken`) are set for both `kite.zerodha.com` and `console.zerodha.com` (Console SSOs off the Kite session).
 6. Navigate to `https://console.zerodha.com/` to confirm Console is reachable.
 
-If the login fails with "invalid TOTP," the 30-second window may have just rolled over — re-fetch the OTP and retry.
+If the login fails with "invalid TOTP," the 30-second window may have just rolled over - re-fetch the OTP and retry.
 
 ## Auth piggyback: CSRF token
 
-Console's API requires an `x-csrftoken` header. **The CSRF token is the value of the `public_token` cookie** — Console reads the cookie and echoes it as the header. Inside `browser_evaluate`:
+Console's API requires an `x-csrftoken` header. **The CSRF token is the value of the `public_token` cookie** - Console reads the cookie and echoes it as the header. Inside `browser_evaluate`:
 
 ```js
 const csrf = document.cookie.split('; ').find(c => c.startsWith('public_token=')).split('=')[1];
@@ -83,7 +83,7 @@ Response shape:
 
 Trade object fields: `trade_date`, `trade_type` (`buy`/`sell`), `quantity`, `price`, `tradingsymbol`, `isin`, `exchange`, `segment`, `order_execution_time`, `order_id`, `trade_id`, `series`, `instrument_id`, `expiry_date` (F&O), `strike` (F&O).
 
-**Pagination is 20 trades/page** — fetch in a loop until `page >= total_pages`.
+**Pagination is 20 trades/page** - fetch in a loop until `page >= total_pages`.
 
 ### Tradebook heatmap (calendar of trade activity)
 
@@ -91,7 +91,7 @@ Trade object fields: `trade_date`, `trade_type` (`buy`/`sell`), `quantity`, `pri
 GET /api/reports/tradebook/heatmap?segment=EQ&from_date=...&to_date=...
 ```
 
-### Other endpoints (capture via network sniff — see below)
+### Other endpoints (capture via network sniff - see below)
 
 - Tax P&L: `/api/reports/pnl/...` (sniff to confirm)
 - Ledger: `/api/funds/...`
@@ -143,10 +143,10 @@ async () => {
 
 ## Session caveats
 
-- **Browser session can drop to `about:blank`** between Claude tool calls. Recovery is cheap because TOTP is in `op` — just `browser_navigate`, fill creds, fetch fresh OTP, fill, submit.
+- **Browser session can drop to `about:blank`** between Claude tool calls. Recovery is cheap because TOTP is in `op` - just `browser_navigate`, fill creds, fetch fresh OTP, fill, submit.
 - The Kite session cookie persists across Console navigation; logging into Kite once is enough. Logging out of Kite invalidates Console.
-- **Don't put long loops with many fetches in a single `browser_evaluate` call** if the data is huge — return values get truncated at ~200KB. Prefer either (a) the `filename` parameter to dump to disk (no truncation), or (b) chunked fetches that return summaries.
-- Empty `from_date` window can return `total: 0` silently — verify with a probe call before assuming the user has no data.
+- **Don't put long loops with many fetches in a single `browser_evaluate` call** if the data is huge - return values get truncated at ~200KB. Prefer either (a) the `filename` parameter to dump to disk (no truncation), or (b) chunked fetches that return summaries.
+- Empty `from_date` window can return `total: 0` silently - verify with a probe call before assuming the user has no data.
 
 ## Reusable analysis: FIFO realized P&L (STCG/LTCG)
 
@@ -197,7 +197,7 @@ for t in trades:
 
 **Common gotcha**: if you set `from_date` too recent, sells of older holdings will be unmatched. Probe the earliest trade with a wide window first (e.g. `from_date=2018-01-01`) to find the actual account opening date, then narrow.
 
-**Charges caveat**: tradebook prices are clean; brokerage, STT, exchange fees, GST, stamp duty are NOT subtracted. Real realized P&L is ~0.1-0.3% worse per trade. Console's *Tax P&L* report (different endpoint) accounts for these — pull it for tax filings.
+**Charges caveat**: tradebook prices are clean; brokerage, STT, exchange fees, GST, stamp duty are NOT subtracted. Real realized P&L is ~0.1-0.3% worse per trade. Console's *Tax P&L* report (different endpoint) accounts for these - pull it for tax filings.
 
 ## Output convention
 
@@ -210,4 +210,4 @@ zerodha-pnl-summary.txt    # analyzer output
 analyze_trades.py          # the FIFO analyzer
 ```
 
-Don't commit these — they contain account-specific PII. Add to `.gitignore` if working in a tracked repo.
+Don't commit these - they contain account-specific PII. Add to `.gitignore` if working in a tracked repo.

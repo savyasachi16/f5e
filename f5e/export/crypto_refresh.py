@@ -1,4 +1,4 @@
-"""Daily crypto refresh — re-prices existing crypto assets via CoinGecko.
+"""Daily crypto refresh - re-prices existing crypto assets via CoinGecko.
 
 Reads the latest snapshot per crypto asset from the DB, fetches today's
 USD prices from CoinGecko's free public API (no key needed), and writes
