@@ -9,6 +9,7 @@ Personal finance pipeline - pulls cash, brokerage, retirement, and manual asset 
 <a href="https://github.com/jsvine/pdfplumber"><img src="https://img.shields.io/badge/pdfplumber-4B5563?style=flat" alt="pdfplumber" /></a>
 <a href="https://docs.astral.sh/uv/"><img src="https://img.shields.io/badge/uv-DE5FE9?style=flat&logo=uv&logoColor=white" alt="uv" /></a>
 <a href="https://docs.pytest.org/"><img src="https://img.shields.io/badge/pytest-0A9EDC?style=flat&logo=pytest&logoColor=white" alt="pytest" /></a>
+<a href="https://docs.astral.sh/ruff/"><img src="https://img.shields.io/badge/Ruff-D7FF64?style=flat&logo=ruff&logoColor=000" alt="Ruff" /></a>
 <a href="https://playwright.dev"><img src="https://img.shields.io/badge/Playwright-2EAD33?style=flat&logo=playwright&logoColor=white" alt="Playwright" /></a>
 <a href="https://plaid.com/docs/resources/cli/"><img src="https://img.shields.io/badge/Plaid_CLI-111111?style=flat&logo=plaid&logoColor=white" alt="Plaid CLI" /></a>
 
@@ -40,6 +41,14 @@ claude mcp add playwright -s user -- npx -y @playwright/mcp@latest
 ```
 
 Open in Claude Code, Codex, Gemini CLI, or OpenCode. Shared repo instructions live in [`AI.md`](AI.md) via symlinks (`CLAUDE.md`, `GEMINI.md`, `OPENCODE.md`, `AGENTS.md`).
+
+## Development
+
+```bash
+uv sync
+uv run ruff check f5e tests
+uv run pytest
+```
 
 ## Layout
 
